@@ -1,0 +1,37 @@
+---
+layout: page
+title: xwMOOC 빅데이터
+subtitle: 빅메모리(bigmemory)
+output:
+  html_document: 
+    toc: yes
+    highlight: tango
+  pdf_document:
+    latex_engine: xelatex
+mainfont: NanumGothic
+---
+ 
+``` {r, include=FALSE}
+source("tools/chunk-options.R")
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, fig.width=12, fig.height=12)
+
+
+```
+
+## 1. R 빅데이터 처리 툴체인 {#bigdata-toolchain}
+
+R을 기반언어로 빅데이터(수십~수백 GB)를 노트북이나 PC에서 데이터를 처리할 수 있는 손쉬운 방법을 살펴보자.
+
+- 자료구조 
+    - `bigmemory`
+- 요약과 표 작성
+    - `biganalytics`
+    - `bigtabulate`
+- 선형대수
+    - `bigalgebra`
+- 통계 모형
+    - `bigpca`
+    - `bigFastLM`
+    - `biglasso`
+    - `bigrf`
+
