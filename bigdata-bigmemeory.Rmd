@@ -6,6 +6,8 @@ output:
   html_document: 
     toc: yes
     highlight: tango
+    code_folding: hide
+    theme: paper
   pdf_document:
     latex_engine: xelatex
 mainfont: NanumGothic
@@ -18,7 +20,49 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, fig.width=12, f
 
 ```
 
-## 1. R 빅데이터 처리 툴체인 {#bigdata-toolchain}
+## 1. R언어 빅데이터 전략 [^eoda-2013] {#bigdata-tidyverse}
+
+[^eoda-2013]: [EODA (2013), Five ways to handle Big Data in R](https://blog.eoda.de/2013/11/27/five-ways-to-handle-big-data-in-r/)
+
+R언어는 데이터 크기가 전체 메모리 공간의 최대 20%를 넘게 되면 급격한 성능저하를 경험할 수 있다. 
+따라서, 데이터 크기가 커지게 되면 물리적인 메모리를 키우던가, 표본추출 등을 통해서 데이터 크기를 줄이던가,
+`bigmemory` 팩키지를 활용하여 하드디스크를 외부 확장 메모리로 활용하여 필요할 때마다 
+메모리가 수용할 수 있는 덩어리(chunk) 크기로 잘라서 가져와서 처리하는 방법을 고려해야만 한다.
+
+> "R is not well-suited for working with data larger than 10-20% of a computer's RAM." - The R Installation and Administration Manual
+
+- 빅데이터를 R로 대응하는 5가지 전략 
+     - 표본추출(Sampling)
+     - 고성능 하드웨어 구입(Bigger Haraware)
+     - 외부 메모리(하드디스크): 하드디스크에 객체 저장(Storing Objects on Hard Disc)
+     - 더 고성능 프로그래밍 언어와 통합(Integration of higher performing programming languages)
+     - 대안 인터프리터(Alternative Interpreters): [pqR](http://radfordneal.github.io/pqR/), [Renjin](http://www.renjin.org/), [TERR](http://spotfire.tibco.com/en/discover-spotfire/what-does-spotfire-do/predictive-analytics/tibco-enterprise-runtime-for-r-terr.aspx)
+
+표본추출의 경우 편이가 없고 전체 데이터셋을 충분히 반영한다면 이를 통해 도출된 모형도 받아들일 수 있기 때문에 충분히 권장된다.
+
+R은 메모리에 모든 객체를 저장하기 때문에 고성능 하드웨어를 구입하게 되면 빅데이터 문제를 효율적으로 처리할 수 있다.
+즉 32비트 컴퓨터로는 최대 **2GB** 공간만 활용할 수 있는 반면 64비트 컴퓨터로 교체하게 되면 최대 **8TB** 공간을 활용할 수 있다.
+
+`bigmemory`, `ff`, `ffbase` 계열 팩키지를 활용하게 되면 하드디스크에 데이터를 저장하고 필요할 때만 덩어리(chunk)로 나눠서
+메모리에서 처리하는 것이 가능하다. 덩어리(chunk)로 나누게 되면 자연스럽게 병렬처리도 가능하다. 
+즉, 덩어리를 쪼개서(split), 처리하고(apply), 결합하는(combine), split-apply-combine 전략을 적용하여 빅데이터를 하드디스크에 넣어
+효율적으로 분석하고 모형을 개발할 수 있다.
+
+<img src="fig/bigdata-bigmemory.png" alt="빅데이터 빅메모리" width="77%" />
+
+더 고성능 프로그래밍 언어와 통합은 R에서 작업을 수행하기 보다 범용 프로그래밍 언어 자바(Java), C/C++ 언어를 활용하여 작업을 수행하게 하고
+결과값을 반환받는 형태로 작업을 수행한다. `rJava`, `Rcpp` 팩키지가 대표적으로 이러한 패러다임을 구현하는 목적으로 개발되어 많이 활용되고 있다.
+
+> ### `tidyverse` 빅데이터 생태계
+>
+> `tidyverse` 생태계에 기반한 빅데이터 처리 전략에 대해서는 [빅데이터 - tidyverse 스파크](http://statkclee.github.io/data-science/ds-tidyverse-spark.html)를 참조한다.
+
+
+## 2. 하드디스크 데이터 저장 빅데이터 처리 툴체인 [^datatable-higgs] [^data-size-limit-in-r] {#bigdata-toolchain}
+
+[^datatable-higgs]: [How To Work With Files Too Large For A Computer’s RAM? Using R To Process Large Data In Chunks Practical walkthroughs on machine learning, data exploration and finding insight.](http://amunategui.github.io/dealing-with-large-files/)
+
+[^data-size-limit-in-r]: [Sundar Pradeep & Philip Moy(2015), Handling large data sets in R](https://rpubs.com/msundar/large_data_analysis)
 
 R을 기반언어로 빅데이터(수십~수백 GB)를 노트북이나 PC에서 데이터를 처리할 수 있는 손쉬운 방법을 살펴보자.
 
@@ -35,3 +79,168 @@ R을 기반언어로 빅데이터(수십~수백 GB)를 노트북이나 PC에서 
     - `biglasso`
     - `bigrf`
 
+
+## 3. R 메모리 [^so-how-to-check-memory] [^zeta-windows-memory] {#r-memory}
+
+[^so-how-to-check-memory]: [Statckoverflow, How to check the amount of RAM in R](https://stackoverflow.com/questions/6457290/how-to-check-the-amount-of-ram-in-r)
+[^zeta-windows-memory]: [제타위키, 윈도우 메모리 용량 확인](https://zetawiki.com/wiki/%EC%9C%88%EB%8F%84%EC%9A%B0_%EB%A9%94%EB%AA%A8%EB%A6%AC_%EC%9A%A9%EB%9F%89_%ED%99%95%EC%9D%B8)
+
+
+### 3.1. 물리적 컴퓨터 메모리 크기 확인 {#r-memory-physical}
+
+데이터를 컴퓨터로 분석하는데 가장 먼저 물리적인 컴퓨터 메모리 크기를 확인한다.
+이를 위해서 `system` 쉘명령어를 통해 `systeminfo` 를 호출하여 "총 실제 메모리:"를 통해 물리 메모리 크기를 확인한다.
+
+
+``` {r r-memory-info}
+library(tidyverse)
+library(pryr)
+library(stringr)
+
+# 1. 컴퓨터 시스템 정보 ------
+
+Sys.info()["sysname"]
+
+# 2. 메모리 확인 -----
+# system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)
+memory_cmd <- 'systeminfo'
+system_info_v <- system(memory_cmd, intern=TRUE)
+
+system_info_v[str_detect(system_info_v, "총 실제 메모리:")]
+```
+
+### 3.2. R 환경에서 사용가능한 메모리 크기 {#r-memory-physical}
+
+R 환경에서 사용가능한 메모리 크기를 `memory.limit()`, `memory.size()` 함수를 통해 확인한다.
+만약 데이터나 randomForest 같은 모형객체가 지나치게 큰 경우 `memory.limit(size = 30000)` 명령어를 통해 
+물리적으로 할당받은 16GB보다 더큰 30GB를 가상메모리로 사용하는 것도 가능하다. 
+단, 메모리가 아닌 하드디스크의 저장공간을 사용하기 때문에 속도저하에 따른 벌칙은 감수한다.
+
+- `memory.limit`: 메가바이트(MB) 단위로 현재 최대 사용 가능한 메모리 크기를 반환한다.
+- `memory.size`: 메가바이트(MB) 단위로 최대 사용중인 전체 메모리 공간 혹은 할당된 메모리 공간크기를 반환한다.
+
+
+``` {r r-memory-limit}
+# 3. R에서 사용가능한 메모리: 단위가 MB-----
+# memory.limit  returns an integer value giving the current maximum memory use allowed (in megabytes).
+# memory.size   returns the maximum total allocated memory or total memory in use (in megabytes).
+
+## 최대 가능 메모리
+memory.limit()
+
+## OS에서 할당받은 메모리 크기 변경
+memory.limit(size = 30000) # 30GB 가상메모리 확장
+```
+
+### 3.3. 메모리 공간 전후 비교 {#r-memory-before-after}
+
+데이터를 가져오거나 `dplyr`를 통해 데이터 작업을 하면서 중간 객체가 만들어지고, 그래프를 생성하는 등 
+다양한 객체를 생성시키게 되면 메모리 사용공간이 증가하는 것을 파악할 수 있다. 
+문제는 생성되는 객체크기보다 더 많은 메모리공간이 점유된다는 점이다. 
+윈도우는 이런 면에서 악명이 높다.
+
+``` {r r-memory-before-after}
+# 4. `memory.size()` 확인 ------
+# https://stackoverflow.com/questions/14352565/r-memory-issue-with-memory-limit
+
+before_mem_size <- memory.size()
+
+test_df <- data.frame(ga = character(0), na=numeric(0))
+
+for(i in 1:10000) {
+    repeat_num <- rpois(1, 10)
+    test_df <- bind_rows(test_df, data.frame(ga = sample(letters, repeat_num, replace=TRUE), 
+                                             na = runif(repeat_num)))
+}
+
+after_mem_size <- memory.size()
+
+
+cat("생성이전", "\t", "생성이후", "\t", ":", "차이(Mb)", "\n",
+    before_mem_size, "\t\t", after_mem_size, "\t", ":", format(object.size(test_df), units = "auto"), "\n")
+```
+
+## 3.4. 메모리 사용량 [^so-memory-usage] {#r-memory-usage}
+
+[^so-memory-usage]: [Stackoverflow, Tricks to manage the available memory in an R session](https://stackoverflow.com/questions/1358003/tricks-to-manage-the-available-memory-in-an-r-session)
+
+일반적으로 데이터 분석을 하게 되면 데이터, 모형, 그래프, 변수 등 다양한 객체가 R 메모리 공간을 잡아먹는다.
+
+`showMemoryUse()` 함수를 만들어서 작업하고 있는 공간에서 메모리를 많이 사용하고 있는 객체를 정의하고 이를 필요한 경우 삭제한다.
+불필요하고 쓸모가 없어진 객체를 `rm` 명령어를 통해 삭제한다.
+
+
+``` {r so-memory-usage}
+# 1. 메모리 사용량 ------
+
+showMemoryUse <- function(sort="size", decreasing=FALSE, limit) {
+    
+    objectList <- ls(parent.frame())
+    
+    oneKB <- 1024
+    oneMB <- 1048576
+    oneGB <- 1073741824
+    
+    memoryUse <- sapply(objectList, function(x) as.numeric(object.size(eval(parse(text=x)))))
+    
+    memListing <- sapply(memoryUse, function(size) {
+        if (size >= oneGB) return(paste(round(size/oneGB,2), "GB"))
+        else if (size >= oneMB) return(paste(round(size/oneMB,2), "MB"))
+        else if (size >= oneKB) return(paste(round(size/oneKB,2), "kB"))
+        else return(paste(size, "bytes"))
+    })
+    
+    memListing <- data.frame(objectName=names(memListing),memorySize=memListing,row.names=NULL)
+    
+    if (sort=="alphabetical") memListing <- memListing[order(memListing$objectName,decreasing=decreasing),] 
+    else memListing <- memListing[order(memoryUse,decreasing=decreasing),] #will run if sort not specified or "size"
+    
+    if(!missing(limit)) memListing <- memListing[1:limit,]
+    
+    print(memListing, row.names=FALSE)
+    return(invisible(memListing))
+}
+
+# 2. 예제 데이터 -----
+
+## 2.1. 데이터프레임
+iris_df <- read_csv("https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data", col_names = FALSE)
+
+iris_df <- iris_df %>% rename(sepal_length = X1,
+                              sepal_width = X2,
+                              petal_length = X3,
+                              petal_width = X4,
+                              class = X5) %>% 
+    mutate(class = str_replace(class, "Iris-", "")) %>% 
+    mutate(class = factor(class, levels = c("setosa", "versicolor", "virginica")))
+
+# 2. 탐색적 데이터 분석 -----------------------------
+library(lattice)
+super.sym <- trellis.par.get("superpose.symbol")
+
+iris_lattice <- splom( ~ iris_df[1:4], groups = class, data = iris_df,
+       panel = panel.superpose,
+       key = list(title = "붓꽃 3종 산점도",
+                  columns = 3, 
+                  points = list(pch = super.sym$pch[1:3],
+                                col = super.sym$col[1:3]),
+                  text = list(c("Setosa", "Versicolor", "Virginica"))))
+
+# 3. 나무모형 -----------------------------
+## 3.1. rpart 
+iris_rpart <- rpart::rpart(class ~ ., data = iris_df, method="class")
+
+## 3.2. Random Forest 모형 -------------------------
+
+iris_tuned_rf <- randomForest::randomForest(class ~ ., 
+                              importance=TRUE,
+                              data=iris_df)
+
+# 4. 메모리 사용량 추정 -------------------------
+
+showMemoryUse(decreasing=TRUE, limit=5)
+
+rm(test_df)
+
+showMemoryUse(decreasing=TRUE, limit=5)
+```
