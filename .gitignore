@@ -11,3 +11,8 @@ _site
 .ipynb_*
 twitterOAuth.R
 .httr-oauth
+data/
+hello_world_big_matrix.bin
+hello_world_big_matrix.desc
+mortgage.bin
+mortgage.desc

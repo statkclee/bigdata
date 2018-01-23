@@ -14,7 +14,7 @@ title: 빅데이터
 
 ## 학습목차 
 
-- [빅메모리(bigmemory)](bigdata-bigmemeory.html)
+- [빅메모리(bigmemory)](bigdata-bigmemeory.html): "빅데이터는 디스크에 쓰고 R 메모리라고 읽는다"
 
 ### [xwMOOC 오픈 교재](https://statkclee.github.io/xwMOOC/)
 

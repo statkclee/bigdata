@@ -1,7 +1,7 @@
 ---
 layout: page
 title: xwMOOC 빅데이터
-subtitle: 빅메모리(bigmemory)
+subtitle: 빅메모리(bigmemory) - "빅데이터는 디스크에 쓰고 R 메모리라고 읽는다"
 output:
   html_document: 
     toc: yes
@@ -58,35 +58,13 @@ R은 메모리에 모든 객체를 저장하기 때문에 고성능 하드웨어
 > `tidyverse` 생태계에 기반한 빅데이터 처리 전략에 대해서는 [빅데이터 - tidyverse 스파크](http://statkclee.github.io/data-science/ds-tidyverse-spark.html)를 참조한다.
 
 
-## 2. 하드디스크 데이터 저장 빅데이터 처리 툴체인 [^datatable-higgs] [^data-size-limit-in-r] {#bigdata-toolchain}
-
-[^datatable-higgs]: [How To Work With Files Too Large For A Computer’s RAM? Using R To Process Large Data In Chunks Practical walkthroughs on machine learning, data exploration and finding insight.](http://amunategui.github.io/dealing-with-large-files/)
-
-[^data-size-limit-in-r]: [Sundar Pradeep & Philip Moy(2015), Handling large data sets in R](https://rpubs.com/msundar/large_data_analysis)
-
-R을 기반언어로 빅데이터(수십~수백 GB)를 노트북이나 PC에서 데이터를 처리할 수 있는 손쉬운 방법을 살펴보자.
-
-- 자료구조 
-    - `bigmemory`
-- 요약과 표 작성
-    - `biganalytics`
-    - `bigtabulate`
-- 선형대수
-    - `bigalgebra`
-- 통계 모형
-    - `bigpca`
-    - `bigFastLM`
-    - `biglasso`
-    - `bigrf`
-
-
-## 3. R 메모리 [^so-how-to-check-memory] [^zeta-windows-memory] {#r-memory}
+## 2. R 메모리 [^so-how-to-check-memory] [^zeta-windows-memory] {#r-memory}
 
 [^so-how-to-check-memory]: [Statckoverflow, How to check the amount of RAM in R](https://stackoverflow.com/questions/6457290/how-to-check-the-amount-of-ram-in-r)
 [^zeta-windows-memory]: [제타위키, 윈도우 메모리 용량 확인](https://zetawiki.com/wiki/%EC%9C%88%EB%8F%84%EC%9A%B0_%EB%A9%94%EB%AA%A8%EB%A6%AC_%EC%9A%A9%EB%9F%89_%ED%99%95%EC%9D%B8)
 
 
-### 3.1. 물리적 컴퓨터 메모리 크기 확인 {#r-memory-physical}
+### 2.1. 물리적 컴퓨터 메모리 크기 확인 {#r-memory-physical}
 
 데이터를 컴퓨터로 분석하는데 가장 먼저 물리적인 컴퓨터 메모리 크기를 확인한다.
 이를 위해서 `system` 쉘명령어를 통해 `systeminfo` 를 호출하여 "총 실제 메모리:"를 통해 물리 메모리 크기를 확인한다.
@@ -109,7 +87,7 @@ system_info_v <- system(memory_cmd, intern=TRUE)
 system_info_v[str_detect(system_info_v, "총 실제 메모리:")]
 ```
 
-### 3.2. R 환경에서 사용가능한 메모리 크기 {#r-memory-physical}
+### 2.2. R 환경에서 사용가능한 메모리 크기 {#r-memory-physical}
 
 R 환경에서 사용가능한 메모리 크기를 `memory.limit()`, `memory.size()` 함수를 통해 확인한다.
 만약 데이터나 randomForest 같은 모형객체가 지나치게 큰 경우 `memory.limit(size = 30000)` 명령어를 통해 
@@ -132,7 +110,7 @@ memory.limit()
 memory.limit(size = 30000) # 30GB 가상메모리 확장
 ```
 
-### 3.3. 메모리 공간 전후 비교 {#r-memory-before-after}
+### 2.3. 메모리 공간 전후 비교 {#r-memory-before-after}
 
 데이터를 가져오거나 `dplyr`를 통해 데이터 작업을 하면서 중간 객체가 만들어지고, 그래프를 생성하는 등 
 다양한 객체를 생성시키게 되면 메모리 사용공간이 증가하는 것을 파악할 수 있다. 
@@ -160,7 +138,7 @@ cat("생성이전", "\t", "생성이후", "\t", ":", "차이(Mb)", "\n",
     before_mem_size, "\t\t", after_mem_size, "\t", ":", format(object.size(test_df), units = "auto"), "\n")
 ```
 
-## 3.4. 메모리 사용량 [^so-memory-usage] {#r-memory-usage}
+## 2.4. 메모리 사용량 [^so-memory-usage] {#r-memory-usage}
 
 [^so-memory-usage]: [Stackoverflow, Tricks to manage the available memory in an R session](https://stackoverflow.com/questions/1358003/tricks-to-manage-the-available-memory-in-an-r-session)
 
@@ -243,4 +221,185 @@ showMemoryUse(decreasing=TRUE, limit=5)
 rm(test_df)
 
 showMemoryUse(decreasing=TRUE, limit=5)
+```
+
+
+## 3. 하드디스크 저장공간 활용 빅데이터 처리 툴체인 [^datatable-higgs] [^data-size-limit-in-r] {#bigdata-toolchain}
+
+[^datatable-higgs]: [How To Work With Files Too Large For A Computer’s RAM? Using R To Process Large Data In Chunks Practical walkthroughs on machine learning, data exploration and finding insight.](http://amunategui.github.io/dealing-with-large-files/)
+
+[^data-size-limit-in-r]: [Sundar Pradeep & Philip Moy(2015), Handling large data sets in R](https://rpubs.com/msundar/large_data_analysis)
+
+R을 기반언어로 빅데이터(수십~수백 GB)를 노트북이나 PC에서 데이터를 처리할 수 있는 손쉬운 방법을 살펴보자.
+
+- 자료구조 
+    - `bigmemory`
+- 요약과 표 작성
+    - `biganalytics`
+    - `bigtabulate`
+- 선형대수
+    - `bigalgebra`
+- 통계 모형
+    - `bigpca`
+    - `bigFastLM`
+    - `biglasso`
+    - `bigrf`
+
+[`bigmemory`](https://github.com/kaneplusplus/bigmemory)는 컴퓨터 메모리(RAM)보다 훨씬 더 큰 행렬(matrix)에 빅데이터를 저장하고 이를 처리하는 기반이 되는 자료구조를 제공한다.
+빅데이터를 처리하는 기본 전략은 디스크에 빅데이터를 저장하고 필요할 때만 메모리로 필요한 부분만큼 옮겨 처리한다. 
+이를 위해 `big.matrix`라는 자료구조가 새로이 고안되었다.
+
+`big.matrix` 자료구조로 빅데이터를 가져오게 되면 다음 두가지 파일에 주목한다.
+
+- `.bin` 확장자: `backingfile`로 디스크에 행렬(matrix) 데이터를 저장한다.
+- `.desc` 확장자: `descriptorfile`로 행수, 변수명 등 빅데이터에 대한 메타정보를 저장하고 있다.
+
+
+### 3.1. `bigmemtory` 맛보기 {#bigdata-toolchain-taste}
+
+`big.matrix` 함수를 활용하여 빅데이터 자료구조를 생성하고 이를 분석 및 모형 개발에 즉시 활용할 수 있다.
+R 행렬(matrix)를 통해 데이터 분석을 해본 경험이 있다면 수월할 수 있다.
+
+``` {r bigmemtory-taste}
+# 0. 환경설정 -----
+library(tidyverse)
+library(bigmemory)
+library(biganalytics)
+library(bigtabulate)
+library(gmodels)
+library(ggpubr)
+library(extrafont)
+loadfonts()
+
+# 1. big.matrix 생성 -----
+
+big_matrix_smpl <- big.matrix(nrow = 5, ncol = 3, type = "double", init = 0,
+                              backingfile = "hello_world_big_matrix.bin",
+                              descriptorfile = "hello_world_big_matrix.desc")
+
+## 1.1. 기본적인 사용법 -----
+### 데이터 할당
+big_matrix_smpl[3,2] <- 7
+### 데이터 살펴보기
+head(big_matrix_smpl)
+### 행과 열 정보
+dim(big_matrix_smpl)
+```
+
+### 3.2. 미국 주택담보 데이터 가져오기 {#bigdata-toolchain-mortgage}
+
+[https://www.fhfa.gov/DataTools/Downloads](https://www.fhfa.gov/DataTools/Downloads) 웹사이트에서 주택담보대출 데이터를 가져온다.
+이유는 `matrix` 행렬 자료 구조가 숫자와 문자(요인)가 섞인 자료를 처리할 수 없기 때문에 동일한 자료형태를 유지하고 있는 공공데이터를 불러 읽어온다.
+
+데이터에 공백이 다수 있기 때문에 공백처리를 위해서 `readLines` 함수로 중복 공백을 단일 공백으로 변환하는 작업을 수행한 후에 `read.big.matrix` 함수를 통해 
+데이터를 분석한다.
+
+``` {r bigmemtory-import}
+# 2. 빅데이터 가져오기 -----
+# https://www.fhfa.gov/DataTools/Downloads
+# download.file("https://www.fhfa.gov/DataTools/Downloads/Documents/Enterprise-PUDB/National-File-A/2016_SFNationalFileA2016.zip", destfile = "data/2016_SFNationalFileA2016.zip")
+# unzip(zipfile = "data/2016_SFNationalFileA2016.zip", exdir = "data", overwrite = TRUE)
+
+# mort_txt <- readLines("data/fhlmc_sf2016a_loans.txt")
+# mort_txt <- str_replace_all(mort_txt, "[\\s]+", " ")
+# writeLines(mort_txt, "data/fhlmc_sf2016a_loans_clean.txt")
+
+## 2.1. 데이터 읽어들이기 -----
+mort_bm <- read.big.matrix("data/fhlmc_sf2016a_loans_clean.txt",
+                           sep=" ",
+                           header = FALSE,
+                           type = "integer",
+                           backingfile = "mortgage.bin", 
+                           descriptorfile = "mortgage.desc")
+
+head(mort_bm)
+```
+
+### 3.3. 빅데이터 탐색적 데이터 분석 {#bigdata-toolchain-mortgage-eda}
+
+빅데이터에서 단변량 범주형 변수를 추출하여 `table` 함수를 활용하여 빈도를 세고 나서 이를 
+R 데이터프레임으로 변환한 후에 `tidyverse` 생태계로 적절한 처리를 한다.
+
+빅데이터 이변량 범주형 변수의 경우 `biganalytics` 팩키지 `bigtable()` 함수를 활용하여 두 범주형 변수에 맞춰
+빈도수를 계산하고 나서 단변량 범주형 변수와 동일하게 교차분석 혹은 시각화를 한다.
+
+``` {r bigmemtory-EDA}
+# 3. 빅데이터 탐색적 분석 -----
+## 3.1. 단변량 범주형 변수 
+table(mort_bm[, 10]) %>% tbl_df %>% 
+    rename(인종 = Var1) %>% 
+    mutate(인종변수 = case_when(인종 == 1 ~ "American Indian or Alaska Native",
+                              인종 == 2 ~ "Asian",
+                              인종 == 3 ~ "Black or African American",
+                              인종 == 4 ~ "Native Hawaiian or Other Pacific Islander",
+                              인종 == 5 ~ "White",
+                              인종 == 6 ~ "Two or more races",
+                              인종 == 7 ~ "Hispanic or Latino",
+                              인종 == 9 ~ "Not available not applicable")) %>% 
+    select(인종, 인종변수, 빈도수=n) %>% 
+    mutate(비율 = scales::percent(빈도수/sum(빈도수))) %>% 
+    arrange(desc(빈도수))
+
+## 3.2. 이변량 범주형 변수 
+bigtable(mort_bm, c(8, 12)) %>% as.data.frame() %>% 
+    rownames_to_column(var = "대출목적") %>% 
+    rename(남성 = `1`, 
+           여성 = `2`) %>% 
+    select(대출목적, 남성, 여성) %>% 
+    filter(row_number() != 3) %>%
+    mutate(대출목적 = ifelse(대출목적 == 1, "주택구입", "기타")) %>% 
+    gather(성별, 지원자수, -대출목적) %>% 
+        ggplot(aes(x=대출목적, y=지원자수, fill=성별)) +
+          geom_bar(stat="identity", position = "dodge") +
+          scale_y_continuous(labels = scales::comma) +
+          theme_pubr(base_family = "NanumGothic") +
+          labs(x="")
+```
+
+### 3.4. 맵리듀스(Map-Reduce) {#bigdata-toolchain-mortgage-map-reduce}
+
+빅데이터 분석의 전형적인 방법인 Split-Apply-Combine 전략을 `Map`, `Reduce` 함수를 활용하여 구현한다.
+즉, 빅데이터를 대도시와 그렇지 않는 것으로 나눈 후에 소득비율을 계산하는 함수(`income_prop`)을 적용하여 처리한 후에
+`Reduce()`통해 결과값을 취합하여 정리한다.
+
+``` {r bigmemtory-mapreduce}
+# 4. 빅데이터 분석 - Split-Apply-Combine -----
+
+## 4.1. 쪼개기(Split) ----- 
+mort_metro_split_bm <- split(1:nrow(mort_bm), mort_bm[, 3])
+
+str(mort_metro_split_bm)
+
+## 4.2. 적용(Apply) ----- 
+income_prop <- function(bm, rows) {
+    bm_subset <- bm[rows, ]
+    
+    prop_low_income  <- sum(bm_subset[, 5] == 1) / (sum(bm_subset[, 5] == 1) + sum(bm_subset[, 5] == 2) + sum(bm_subset[, 5] == 3))
+    prop_mid_income  <- sum(bm_subset[, 5] == 2) / (sum(bm_subset[, 5] == 1) + sum(bm_subset[, 5] == 2) + sum(bm_subset[, 5] == 3))
+    prop_high_income <- sum(bm_subset[, 5] == 3) / (sum(bm_subset[, 5] == 1) + sum(bm_subset[, 5] == 2) + sum(bm_subset[, 5] == 3))
+
+    c(prop_low_income, prop_mid_income, prop_high_income)
+}
+
+mort_income_by_metro_lst <- Map(function(rows) income_prop(mort_bm, rows), mort_metro_split_bm)
+
+## 4.3. 결합(Combine) ----- 
+
+Reduce(rbind, mort_income_by_metro_lst) %>% tbl_df
+
+## 4.4. 교차검증(Crosscheck) ----- 
+
+income_metro_df <- bigtable(mort_bm, c(3, 5)) %>% as.data.frame() %>% 
+    rownames_to_column(var = "도시구분") %>% 
+    select(-`9`) %>% 
+    gather(소득집단, 소득, - 도시구분) %>% 
+    mutate(도시구분 = ifelse(도시구분 == 1, "대도시", "지방"),
+               소득집단 = case_when(소득집단 == 1 ~ "<10%",
+                                    소득집단 == 2 ~ ">=10%, <30%",
+                                    TRUE ~ ">=30%"))
+
+income_metro_df %>% group_by(도시구분) %>% 
+    mutate(비율 = 소득/sum(소득)) %>% 
+    select(-소득) %>% 
+    spread(소득집단, 비율)
 ```
