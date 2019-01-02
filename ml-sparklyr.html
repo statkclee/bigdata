@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: xwMOOC 기계학습</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-59802572-17', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">xwMOOC 기계학습</h1></a>
+          <h2 class="subtitle">dplyr을 Spark 위에 올린 sparklyr</h2>
+          <h2 id="r과-스파크-datacamp-sparklyr">1. R과 스파크 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h2>
+<p>R은 데이터분석 코드를 빠르고 가독성 좋게 작성하기 좋은 언어다. 마찬가지로 아파치 스파크(Apache Spark)은 엄청 큰 빅데이터를 빠르게 분석하기 좋도록 설계되었다. <code>sparklyr</code>은 스파크 클러스터에 <code>dplyr</code> R코드를 작성해서 돌릴 수 있는 팩키지다. 즉, <code>dplyr</code> 팩키지 다양한 기능을 스파크 데이터프레임에 적용하여 데이터 분석 작업을 수행할 수 있다는 의미가 된다.</p>
+<p>R이 데이터분석에 최적화되어 있어 시각화나 데이터를 다루는데 뛰어난 성능과 기능을 자랑하지만 한가지 한계가 <strong>메모리(memory)</strong>를 넘어서는 데이터는 다루지 못하는 한계가 있다. 반면에 스파크는 오픈소스 클러스터 컴퓨팅 플랫폼이라 거의 무한대 크기의 데이터를 다룰 수 있다.</p>
+<p>따라서, R과 스파크의 장점을 결합하고자 하는 노력이 있었고, 그 일환으로 <code>sparklyr</code>이 개발되어 빅데이터를 <code>dplyr</code> 사상에 따라 자유로이 분석할 수 있게 되었다. 빅데이터를 스파크 클러스터에 올려 <code>dplyr</code> 구문으로 분석할 수 있는 길이 열린 것이다.</p>
+<p><img src="fig/sparklyr-datacamp.png" alt="스파크 R 그리고 sparklyr" width="77%" /></p>
+<h2 id="스파크-헬로우-월드">2. 스파크 헬로우 월드</h2>
+<p>R에서 로컬 컴퓨터에 스파크를 설치하고 이를 운영하는 것은 간단하다. <code>spark_install()</code> 명령어로 설치하고 나서 <code>spark_connect()</code>를 통해 로컬 컴퓨터에 구축된 스파크 클러스트에 연결한다. <code>spark_version()</code>을 확인하고 나서, <code>spark_disconnect()</code> 명령어로 스파크 클러스트 연결을 종료한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 1. 설치</span>
+<span class="kw">install.packages</span>(<span class="st">&quot;sparklyr&quot;</span>)
+<span class="kw">library</span>(sparklyr)
+<span class="kw">spark_install</span>()
+
+<span class="co"># 2. 스파크 클러스터 연결</span>
+sc &lt;-<span class="kw">spark_connect</span>(<span class="dt">master=</span><span class="st">&quot;local&quot;</span>)
+
+## 2.1. 스파크 버젼 확인
+<span class="kw">spark_version</span>(<span class="dt">sc=</span>sc)
+
+<span class="co"># 3. 스파크 연결해제</span>
+<span class="kw">spark_disconnect</span>(<span class="dt">sc=</span>sc)</code></pre></div>
+<h2 id="csv-파일-불러오기">3. <code>csv</code> 파일 불러오기</h2>
+<p>스파크 클러스터가 완료되면 가장 먼저 해야 할 일은 스파크 클러스터에서 분석할 데이터를 불러오는 것이다. <code>.csv</code> 파일을 R로 <code>read_csv()</code> 함수로 불러오는 것과 마찬가지로 <code>spark_read_csv()</code> 함수를 통해 직접 불러오거나, 이미 데이터프레임으로 R에서 분석가능한 형태로 존재하게 되면 <code>copy_to()</code> 명령어를 통해 스파크에 전달한다.</p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h3 id="주의할-점"><span class="glyphicon glyphicon-pushpin"></span>주의할 점</h3>
+</div>
+<div class="panel-body">
+<p><code>copy_to()</code> 명령어는 기본적으로 <strong>복사(copy)</strong> 작업으로 느린 특성이 있다. 따라서 이런 작업은 가능하면 회피하고 다른 최적의 전략을 탐색한다. <code>copy_to()</code>에 대응되는 <code>collect()</code> 작업도 마찬가지로 특별한 경우나 당위성이 없다면 다른 최적화 방법을 탐색한다.</p>
+</div>
+</aside>
+<p><code>iris</code> 데이터프레임을 스파크 클러스터로 전달하는 명령어는 <code>copy_to(sc, iris)</code>으로 스파크 클러스트(sc)에 <code>iris</code>를 복사해 보낸다. <code>src_tbls</code></p>
+<p><img src="fig/spark_read_csv.png" alt="csv 파일 불러오기" width="77%" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glimpse</span>(iris)</code></pre></div>
+<pre class="output"><code>Observations: 150
+Variables: 5
+$ Sepal.Length &lt;dbl&gt; 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9,...
+$ Sepal.Width  &lt;dbl&gt; 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1,...
+$ Petal.Length &lt;dbl&gt; 1.4, 1.4, 1.3, 1.5, 1.4, 1.7, 1.4, 1.5, 1.4, 1.5,...
+$ Petal.Width  &lt;dbl&gt; 0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.3, 0.2, 0.2, 0.1,...
+$ Species      &lt;fctr&gt; setosa, setosa, setosa, setosa, setosa, setosa, ...
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Sys.setenv(SPARK_HOME=&quot;C:/spark-1.6.2-bin-hadoop2.6&quot;)</span>
+
+sc &lt;-<span class="kw">spark_connect</span>(<span class="dt">master=</span><span class="st">&quot;local&quot;</span>)
+
+iris_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, iris)
+
+<span class="kw">src_tbls</span>(sc)</code></pre></div>
+<pre class="output"><code>[1] &quot;iris&quot;
+</code></pre>
+<h3 id="빅데이터와-tibble-자료구조">3.1. 빅데이터와 <code>tibble()</code> 자료구조</h3>
+<p><code>copy_to()</code> 명령어를 통해 반환되는 객체는 <code>tibble()</code>이다. 티블은 data.frame 객체를 내부에 갖고 있을 수도 있고, 원격 객체 (데이터베이스 등)를 갖을 수 있고 다양한 출력명령어를 지원한다. 따라서, 티블(tibble)로 데이터를 반환받게 되면 크기는 매우 작고 다양한 출력기능을 활용할 수 있고, 실제 데이터는 스파크 클러스터에 존재한다.</p>
+<p><img src="fig/spark_tbl_make_link.png" alt="스파크 티블 링크" width="77%" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># iris_tbl 티블 객체에 `iris` 스파크 데이터프레임을 `tbl()` 명령어로 연결</span>
+iris_tbl &lt;-<span class="st"> </span><span class="kw">tbl</span>(sc, <span class="st">&quot;iris&quot;</span>)
+
+<span class="kw">dim</span>(iris_tbl)</code></pre></div>
+<pre class="output"><code>[1] 150   5
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pryr::<span class="kw">object_size</span>(iris_tbl)</code></pre></div>
+<pre class="output"><code>9.89 kB
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 출력</span>
+<span class="kw">print</span>(iris_tbl, <span class="dt">n=</span><span class="dv">6</span>, <span class="dt">width =</span> <span class="ot">Inf</span>)</code></pre></div>
+<pre class="output"><code>Source:   query [150 x 5]
+Database: spark connection master=local[8] app=sparklyr local=TRUE
+
+# A tibble: 150 x 5
+  Sepal_Length Sepal_Width Petal_Length Petal_Width Species
+         &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;   &lt;chr&gt;
+1          5.1         3.5          1.4         0.2  setosa
+2          4.9         3.0          1.4         0.2  setosa
+3          4.7         3.2          1.3         0.2  setosa
+4          4.6         3.1          1.5         0.2  setosa
+5          5.0         3.6          1.4         0.2  setosa
+6          5.4         3.9          1.7         0.4  setosa
+# ... with 144 more rows
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 스파크 데이터프레임 자료구조 확인</span>
+<span class="kw">glimpse</span>(iris_tbl)</code></pre></div>
+<pre class="output"><code>Observations: 150
+Variables: 5
+</code></pre>
+<pre class="output"><code>Error in if (width[i] &lt;= max_width[i]) next: TRUE/FALSE가 필요한 곳에 값이 없습니다
+</code></pre>
+<p><code>pryr::object_size</code> 명령어를 통해 크기를 확인할 수 있다.</p>
+<h2 id="dplyr-데이터-처리">4. <code>dplyr</code> 데이터 처리</h2>
+<h3 id="dplyr-기본">4.1. <code>dplyr</code> 기본</h3>
+<p>스파크 데이터프레임을 <code>sparklyr</code> 팩키지를 통해 <code>tibble()</code> 자료형으로 연결시키고 나면 <code>dplyr</code> 명령어를 다수 활용할 수 있다. 가장 기본적인 <code>dplyr</code> 명령어는 다음과 같다.</p>
+<ul>
+<li>select: 변수 선택</li>
+<li>filter: 관측점 선택</li>
+<li>arrange: 정렬</li>
+<li>mutate: 변수 생성</li>
+<li>summarize: 총합/요약</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">copy_to</span>(sc, iris, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre class="output"><code>Source:   query [150 x 5]
+Database: spark connection master=local[8] app=sparklyr local=TRUE
+
+# A tibble: 150 x 5
+   Sepal_Length Sepal_Width Petal_Length Petal_Width Species
+          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;   &lt;chr&gt;
+ 1          5.1         3.5          1.4         0.2  setosa
+ 2          4.9         3.0          1.4         0.2  setosa
+ 3          4.7         3.2          1.3         0.2  setosa
+ 4          4.6         3.1          1.5         0.2  setosa
+ 5          5.0         3.6          1.4         0.2  setosa
+ 6          5.4         3.9          1.7         0.4  setosa
+ 7          4.6         3.4          1.4         0.3  setosa
+ 8          5.0         3.4          1.5         0.2  setosa
+ 9          4.4         2.9          1.4         0.2  setosa
+10          4.9         3.1          1.5         0.1  setosa
+# ... with 140 more rows
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">iris_sdf_tbl &lt;-<span class="st"> </span><span class="kw">tbl</span>(sc, <span class="st">&quot;iris&quot;</span>)
+<span class="kw">glimpse</span>(iris_sdf_tbl)</code></pre></div>
+<pre class="output"><code>Observations: 150
+Variables: 5
+</code></pre>
+<pre class="output"><code>Error in if (width[i] &lt;= max_width[i]) next: TRUE/FALSE가 필요한 곳에 값이 없습니다
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 2. 기본 데이터 처리 ------------------------------------------</span>
+## 2.1. select
+iris_sdf_tbl %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(Sepal_Length, Petal_Length, Species)</code></pre></div>
+<pre class="output"><code>Source:   query [150 x 3]
+Database: spark connection master=local[8] app=sparklyr local=TRUE
+
+# A tibble: 150 x 3
+   Sepal_Length Petal_Length Species
+          &lt;dbl&gt;        &lt;dbl&gt;   &lt;chr&gt;
+ 1          5.1          1.4  setosa
+ 2          4.9          1.4  setosa
+ 3          4.7          1.3  setosa
+ 4          4.6          1.5  setosa
+ 5          5.0          1.4  setosa
+ 6          5.4          1.7  setosa
+ 7          4.6          1.4  setosa
+ 8          5.0          1.5  setosa
+ 9          4.4          1.4  setosa
+10          4.9          1.5  setosa
+# ... with 140 more rows
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 2.2. filter
+iris_sdf_tbl %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(Sepal_Length, Petal_Length, Species) %&gt;%<span class="st"> </span>
+<span class="st">  </span>dplyr::<span class="kw">filter</span>(Sepal_Length &gt;<span class="st"> </span><span class="fl">5.0</span>, Petal_Length &gt;<span class="st"> </span><span class="dv">5</span>)</code></pre></div>
+<pre class="output"><code>Source:   query [42 x 3]
+Database: spark connection master=local[8] app=sparklyr local=TRUE
+
+# A tibble: 42 x 3
+   Sepal_Length Petal_Length    Species
+          &lt;dbl&gt;        &lt;dbl&gt;      &lt;chr&gt;
+ 1          6.0          5.1 versicolor
+ 2          6.3          6.0  virginica
+ 3          5.8          5.1  virginica
+ 4          7.1          5.9  virginica
+ 5          6.3          5.6  virginica
+ 6          6.5          5.8  virginica
+ 7          7.6          6.6  virginica
+ 8          7.3          6.3  virginica
+ 9          6.7          5.8  virginica
+10          7.2          6.1  virginica
+# ... with 32 more rows
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 2.3. arrange
+iris_sdf_tbl %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(Sepal_Length, Petal_Length, Species) %&gt;%<span class="st"> </span>
+<span class="st">  </span>dplyr::<span class="kw">filter</span>(Sepal_Length &gt;<span class="st"> </span><span class="fl">5.0</span>, Petal_Length &gt;<span class="st"> </span><span class="dv">5</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">arrange</span>(Species, <span class="kw">desc</span>(Petal_Length), Sepal_Length)</code></pre></div>
+<pre class="output"><code>Source:   query [42 x 3]
+Database: spark connection master=local[8] app=sparklyr local=TRUE
+
+# A tibble: 42 x 3
+   Sepal_Length Petal_Length    Species
+          &lt;dbl&gt;        &lt;dbl&gt;      &lt;chr&gt;
+ 1          6.0          5.1 versicolor
+ 2          7.7          6.9  virginica
+ 3          7.7          6.7  virginica
+ 4          7.7          6.7  virginica
+ 5          7.6          6.6  virginica
+ 6          7.9          6.4  virginica
+ 7          7.3          6.3  virginica
+ 8          7.2          6.1  virginica
+ 9          7.4          6.1  virginica
+10          7.7          6.1  virginica
+# ... with 32 more rows
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 2.4. mutate
+iris_sdf_tbl %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(Sepal_Length, Petal_Length, Species) %&gt;%<span class="st"> </span>
+<span class="st">  </span>dplyr::<span class="kw">filter</span>(Sepal_Length &gt;<span class="st"> </span><span class="fl">5.0</span>, Petal_Length &gt;<span class="st"> </span><span class="dv">5</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">arrange</span>(Species, <span class="kw">desc</span>(Petal_Length), Sepal_Length) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">log_Sepal_Length =</span> <span class="kw">log</span>(Sepal_Length))</code></pre></div>
+<pre class="output"><code>Source:   query [42 x 4]
+Database: spark connection master=local[8] app=sparklyr local=TRUE
+
+# A tibble: 42 x 4
+   Sepal_Length Petal_Length    Species log_Sepal_Length
+          &lt;dbl&gt;        &lt;dbl&gt;      &lt;chr&gt;            &lt;dbl&gt;
+ 1          6.0          5.1 versicolor        0.5581106
+ 2          7.7          6.9  virginica        0.4899030
+ 3          7.7          6.7  virginica        0.4899030
+ 4          7.7          6.7  virginica        0.4899030
+ 5          7.6          6.6  virginica        0.4930606
+ 6          7.9          6.4  virginica        0.4838251
+ 7          7.3          6.3  virginica        0.5030499
+ 8          7.2          6.1  virginica        0.5065648
+ 9          7.4          6.1  virginica        0.4996303
+10          7.7          6.1  virginica        0.4899030
+# ... with 32 more rows
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 2.5. summarize
+iris_sdf_tbl %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(Sepal_Length, Petal_Length, Species) %&gt;%<span class="st"> </span>
+<span class="st">  </span>dplyr::<span class="kw">filter</span>(Sepal_Length &gt;<span class="st"> </span><span class="fl">5.0</span>, Petal_Length &gt;<span class="st"> </span><span class="dv">5</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">arrange</span>(Species, <span class="kw">desc</span>(Petal_Length), Sepal_Length) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">log_Sepal_Length =</span> <span class="kw">log</span>(Sepal_Length)) %&gt;%<span class="st"> </span>
+<span class="st">  </span>dplyr::<span class="kw">summarise</span>(<span class="dt">mean_sepal_length =</span> <span class="kw">mean</span>(Sepal_Length),
+                   <span class="dt">max_petal_legnth =</span> <span class="kw">max</span>(Petal_Length))</code></pre></div>
+<pre class="output"><code>Source:   query [1 x 2]
+Database: spark connection master=local[8] app=sparklyr local=TRUE
+
+# A tibble: 1 x 2
+  mean_sepal_length max_petal_legnth
+              &lt;dbl&gt;            &lt;dbl&gt;
+1          6.721429              6.9
+</code></pre>
+<h3 id="dplyr-고급-기능">4.2. <code>dplyr</code> 고급 기능</h3>
+<p>변수를 선택할 때 <code>starts_with</code>, <code>ends_with</code>, <code>contain</code> 등을 활용할 수 있고, <code>distinct</code>도 변수내 포함된 범주를 식별할 때 도움이 많이 된다. 특히, 범주형 변수의 경우 <code>count</code> 함수에 정렬 <code>sort=TRUE</code>를 넣고 <code>top_n</code> 을 통해 상위 출현빈도가 많은 범주를 찾아내는 것도 많이 활용되는 패턴이다.</p>
+<p><code>group_by</code> 함수를 함께 넣어 집단별로 요약통계량을 계산하는 것도 가능히다.</p>
+<p><code>dplyr</code>에서 데이터를 다루는 R 코드를 작성하면 내부적으로 이를 SQL 문으로 변환시켜 스파크 클러스터에 전달시킨다. 따라서, <code>spark_connect</code>에서 정의한 SPARK Context를 인자로 넣고 SQL 문장을 넣으면 R 코드로 작성한 동일한 결과를 얻게 된다. <code>dplyr</code> R 코드가 SQL 코드로 변환한 것을 확인하고자 할 경우, 혹은 R을 모르는 다른 개발자와 SQL로 의사소통을 하고자 할 때, <code>explain</code> 명령어를 통해 SQL 코드를 얻을 수 있다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 3. 고급 데이터 처리 ------------------------------------------</span>
+## 3.1. select 
+iris_sdf_tbl %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(<span class="kw">starts_with</span>(<span class="st">&quot;Sepal&quot;</span>), Species)</code></pre></div>
+<pre class="output"><code>Source:   query [150 x 3]
+Database: spark connection master=local[8] app=sparklyr local=TRUE
+
+# A tibble: 150 x 3
+   Sepal_Length Sepal_Width Species
+          &lt;dbl&gt;       &lt;dbl&gt;   &lt;chr&gt;
+ 1          5.1         3.5  setosa
+ 2          4.9         3.0  setosa
+ 3          4.7         3.2  setosa
+ 4          4.6         3.1  setosa
+ 5          5.0         3.6  setosa
+ 6          5.4         3.9  setosa
+ 7          4.6         3.4  setosa
+ 8          5.0         3.4  setosa
+ 9          4.4         2.9  setosa
+10          4.9         3.1  setosa
+# ... with 140 more rows
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 3.2. filter
+iris_sdf_tbl %&gt;%<span class="st"> </span><span class="kw">distinct</span>(Species)</code></pre></div>
+<pre class="output"><code>Source:   query [3 x 1]
+Database: spark connection master=local[8] app=sparklyr local=TRUE
+
+# A tibble: 3 x 1
+     Species
+       &lt;chr&gt;
+1  virginica
+2 versicolor
+3     setosa
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 3.3. 계수(count)
+iris_sdf_tbl %&gt;%<span class="st"> </span>dplyr::<span class="kw">count</span>(Species, <span class="dt">sort=</span><span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span>dplyr::<span class="kw">top_n</span>(<span class="dv">3</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">explain</span>() <span class="co">#버그 https://github.com/rstudio/sparklyr/issues/645</span>
+## 3.4. group_by
+iris_sdf_tbl %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(Sepal_Length, Petal_Length, Species) %&gt;%<span class="st"> </span>
+<span class="st">  </span>dplyr::<span class="kw">filter</span>(Sepal_Length &gt;<span class="st"> </span><span class="fl">1.0</span>, Petal_Length &gt;<span class="st"> </span><span class="fl">1.5</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">log_Sepal_Length =</span> <span class="kw">log</span>(Sepal_Length)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(Species) %&gt;%<span class="st"> </span>
+<span class="st">  </span>dplyr::<span class="kw">summarise</span>(<span class="dt">mean_sepal_length =</span> <span class="kw">mean</span>(Sepal_Length),
+                   <span class="dt">max_petal_legnth =</span> <span class="kw">max</span>(Petal_Length)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">arrange</span>(mean_sepal_length)</code></pre></div>
+<pre class="output"><code>Source:   query [3 x 3]
+Database: spark connection master=local[8] app=sparklyr local=TRUE
+
+# A tibble: 3 x 3
+     Species mean_sepal_length max_petal_legnth
+       &lt;chr&gt;             &lt;dbl&gt;            &lt;dbl&gt;
+1     setosa          5.069231              1.9
+2 versicolor          5.936000              5.1
+3  virginica          6.588000              6.9
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 3.5. SQL
+iris_sdf_tbl %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(Sepal_Length, Petal_Length, Species) %&gt;%<span class="st"> </span>
+<span class="st">  </span>dplyr::<span class="kw">filter</span>(Sepal_Length &gt;<span class="st"> </span><span class="fl">1.0</span>, Petal_Length &gt;<span class="st"> </span><span class="fl">1.5</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">log_Sepal_Length =</span> <span class="kw">log</span>(Sepal_Length)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(Species) %&gt;%<span class="st"> </span>
+<span class="st">  </span>dplyr::<span class="kw">summarise</span>(<span class="dt">mean_sepal_length =</span> <span class="kw">mean</span>(Sepal_Length),
+                   <span class="dt">max_petal_legnth =</span> <span class="kw">max</span>(Petal_Length)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">arrange</span>(mean_sepal_length) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">explain</span>()
+
+DBI::<span class="kw">dbGetQuery</span>(sc, 
+        <span class="st">&quot;SELECT `Species`, AVG(`Sepal_Length`) AS `mean_sepal_length`, MAX(`Petal_Length`) AS `max_petal_legnth`</span>
+<span class="st">                FROM (SELECT `Sepal_Length`, `Petal_Length`, `Species`, ln(`Sepal_Length`) AS `log_Sepal_Length`</span>
+<span class="st">                FROM (SELECT *</span>
+<span class="st">                FROM (SELECT `Sepal_Length` AS `Sepal_Length`, `Petal_Length` AS `Petal_Length`, `Species` AS `Species`</span>
+<span class="st">                FROM `iris`) `rvbmbsphdh`</span>
+<span class="st">                WHERE ((`Sepal_Length` &gt; 1.0) AND (`Petal_Length` &gt; 1.5))) `stgslkujqx`) `uwmrkgahqh`</span>
+<span class="st">                GROUP BY `Species`</span>
+<span class="st">                ORDER BY `mean_sepal_length`&quot;</span>)</code></pre></div>
+<pre class="output"><code>     Species mean_sepal_length max_petal_legnth
+1     setosa          5.069231              1.9
+2 versicolor          5.936000              5.1
+3  virginica          6.588000              6.9
+</code></pre>
+<h2 id="데이터프레임-변환과-중간결과-저장">5. 데이터프레임 변환과 중간결과 저장</h2>
+<p>영구저장소에 저장된 <code>.csv</code> 파일을 메모리로 불러올릴 때 <code>read_csv</code> 함수를 사용해서 R 데이터 프레임으로 변환시킨다. 마찬가지로 R 데이터프레임을 스파크 클러스터 데이터프레임으로 보낼 때 <code>copy_to</code> 함수를 사용해서 복사를 한다.</p>
+<p>이제 반대로 스파크 클러스터에 있는 스파크 데이터프레임을 R 데이터프레임으로 변환시키는 작업이 필요한데 이런 경우 <code>collect()</code> 함수를 활용하여 스파크 데이터프레임을 R 데이터프레임으로 변환시키게 된다.</p>
+<p><code>dplyr</code> 툴체인을 사용하게 되면 파이프 연산이 길어질 경우 중간에 “뻑(?)”이 나거나 다운되는 경우도 흔하다. 이런 경우 중간 결과를 저장하기 위해서 <code>compute</code> 명령어에 인자값으로 스파크 데이터프레임 이름을 붙이게 되면 안정적인 후속작업도 가능하다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 1. 데이터프레임 변환 -----------------------------------------------</span>
+iris_df &lt;-<span class="st"> </span>iris_sdf_tbl %&gt;%<span class="st"> </span>
+<span class="st">  </span>dplyr::<span class="kw">select</span>(<span class="kw">starts_with</span>(<span class="st">&quot;Sepal&quot;</span>), Species) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">collect</span>()
+
+<span class="kw">class</span>(iris_df)</code></pre></div>
+<pre class="output"><code>[1] &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 2. 중간결과 저장 -----------------------------------------------</span>
+iris_sepal &lt;-<span class="st"> </span>iris_sdf_tbl %&gt;%
+<span class="st">  </span>dplyr::<span class="kw">select</span>(<span class="kw">starts_with</span>(<span class="st">&quot;Sepal&quot;</span>), Species) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">compute</span>(<span class="st">&quot;iris_sepal&quot;</span>)
+
+<span class="kw">src_tbls</span>(sc)</code></pre></div>
+<pre class="output"><code>[1] &quot;iris&quot;       &quot;iris_sepal&quot;
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(iris_sepal)</code></pre></div>
+<pre class="output"><code>[1] &quot;tbl_spark&quot; &quot;tbl_sql&quot;   &quot;tbl_lazy&quot;  &quot;tbl&quot;      
+</code></pre>
+<h2 id="기계학습-사전-준비">6. 기계학습 사전 준비</h2>
+<h3 id="스파크-r-스키마-비교">6.1. 스파크, R 스키마 비교</h3>
+<p>스파크는 엄격한 자료형을 갖고 있고 동시에 통계학이나 데이터분석에서 많이 활용되는 요인(factor)에 대한 개념이 없기 때문에 이를 별도로 구현해야 하고 데이터분석 과정에 반영을 시켜야 된다.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">R 자료형 (한글)</th>
+<th align="left">R 자료형</th>
+<th align="left">스파크 자료형</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">논리형</td>
+<td align="left">logical</td>
+<td align="left">BooleanType</td>
+</tr>
+<tr class="even">
+<td align="left">숫자형</td>
+<td align="left">numeric</td>
+<td align="left">DoubleType</td>
+</tr>
+<tr class="odd">
+<td align="left">정수형</td>
+<td align="left">integer</td>
+<td align="left">IntegerType</td>
+</tr>
+<tr class="even">
+<td align="left">문자형</td>
+<td align="left">character</td>
+<td align="left">StringType</td>
+</tr>
+<tr class="odd">
+<td align="left">리스트</td>
+<td align="left">list</td>
+<td align="left">ArrayType</td>
+</tr>
+</tbody>
+</table>
+<h3 id="스파크에서-제공하는-기능함수">6.2. 스파크에서 제공하는 기능(함수)</h3>
+<p><code>dplyr</code>에서 제공되는 함수 외에 함수명 시작이 <code>ft_</code>, <code>sdf_</code>, <code>ml_</code>로 시작되는 함수들이 있다.</p>
+<ul>
+<li><code>sdf_</code> : 스파크에서 지원하는 함수</li>
+<li><code>ft_</code> : 변수 변환(feature transformation)으로 예측모형의 전처리로 사용되는 함수</li>
+<li><code>ml_</code> : 기계학습 기능을 지원하는 함수</li>
+</ul>
+<p>연속형 변수를 이산화하여 범주형 변수로 만들 경우 <code>ft_binarizer</code> 함수나 <code>ft_bucketizer</code> 함수를 활용한다. <code>ft_bucketizer</code> 함수는 R환경에서 <code>cut()</code> + <code>quantile()</code> 함수를 조합한 기능을 한방에 지원한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 1. 스파크 데이터프레임 스키마</span>
+(iris_schema &lt;-<span class="st"> </span><span class="kw">sdf_schema</span>(iris_sdf_tbl))</code></pre></div>
+<pre class="output"><code>$Sepal_Length
+$Sepal_Length$name
+[1] &quot;Sepal_Length&quot;
+
+$Sepal_Length$type
+[1] &quot;DoubleType&quot;
+
+
+$Sepal_Width
+$Sepal_Width$name
+[1] &quot;Sepal_Width&quot;
+
+$Sepal_Width$type
+[1] &quot;DoubleType&quot;
+
+
+$Petal_Length
+$Petal_Length$name
+[1] &quot;Petal_Length&quot;
+
+$Petal_Length$type
+[1] &quot;DoubleType&quot;
+
+
+$Petal_Width
+$Petal_Width$name
+[1] &quot;Petal_Width&quot;
+
+$Petal_Width$type
+[1] &quot;DoubleType&quot;
+
+
+$Species
+$Species$name
+[1] &quot;Species&quot;
+
+$Species$type
+[1] &quot;StringType&quot;
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">iris_schema %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">lapply</span>(function(x) <span class="kw">do.call</span>(data.frame, x)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">bind_rows</span>()</code></pre></div>
+<pre class="output"><code>          name       type
+1 Sepal_Length DoubleType
+2  Sepal_Width DoubleType
+3 Petal_Length DoubleType
+4  Petal_Width DoubleType
+5      Species StringType
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 2. 스파크 요인(Factor) -----------------------------------------------</span>
+## 2.1. 요인(factor) 변환
+iris_sdf_df &lt;-<span class="st"> </span>iris_sdf_tbl %&gt;%
+<span class="st">  </span>dplyr::<span class="kw">select</span>(Sepal_Length) %&gt;%
+<span class="st">  </span><span class="kw">ft_binarizer</span>(<span class="st">&quot;Sepal_Length&quot;</span>, <span class="st">&quot;sepal_length_f&quot;</span>, <span class="fl">4.8</span>) %&gt;%
+<span class="st">  </span><span class="kw">collect</span>() %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">sepal_length_f =</span> <span class="kw">as.logical</span>(sepal_length_f))
+
+<span class="kw">ggplot</span>(iris_sdf_df, <span class="kw">aes</span>(sepal_length_f)) +
+<span class="st">  </span><span class="kw">geom_bar</span>()</code></pre></div>
+<p><img src="fig/spark-dataframe-factor-1.png" title="plot of chunk spark-dataframe-factor" alt="plot of chunk spark-dataframe-factor" style="display: block; margin: auto;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 2.2. 연속형 변수를 범주형 변환 (I)
+
+sepal_split &lt;-<span class="st"> </span><span class="kw">quantile</span>(iris$Sepal.Length, <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="dv">1</span>))
+sepal_split_labels &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;-25%&quot;</span>, <span class="st">&quot;25-50%&quot;</span>, <span class="st">&quot;50-75%&quot;</span>, <span class="st">&quot;75-100%&quot;</span>)
+
+iris_sdf_df &lt;-<span class="st"> </span>iris_sdf_tbl %&gt;%
+<span class="st">  </span>dplyr::<span class="kw">select</span>(Sepal_Length, Petal_Length) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Sepal_Length =</span> <span class="kw">as.numeric</span>(Sepal_Length)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ft_bucketizer</span>(<span class="st">&quot;Sepal_Length&quot;</span>, <span class="st">&quot;sepal_length_f&quot;</span>, <span class="dt">splits =</span> sepal_split) %&gt;%
+<span class="st">  </span><span class="kw">collect</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">sepal_length_f =</span> <span class="kw">factor</span>(sepal_length_f, <span class="dt">labels=</span>sepal_split_labels))
+
+<span class="kw">ggplot</span>(iris_sdf_df, <span class="kw">aes</span>(sepal_length_f, Petal_Length)) +
+<span class="st">  </span><span class="kw">geom_boxplot</span>()</code></pre></div>
+<p><img src="fig/spark-dataframe-factor-2.png" title="plot of chunk spark-dataframe-factor" alt="plot of chunk spark-dataframe-factor" style="display: block; margin: auto;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 2.2. 연속형 변수를 범주형 변환 (II)
+
+iris_sdf_tbl %&gt;%
+<span class="st">  </span>dplyr::<span class="kw">select</span>(Sepal_Length, Petal_Length) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Sepal_Length =</span> <span class="kw">as.numeric</span>(Sepal_Length)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ft_quantile_discretizer</span>(<span class="st">&quot;Sepal_Length&quot;</span>, <span class="st">&quot;sepal_length_f&quot;</span>, <span class="dt">n.buckets =</span> <span class="dv">4</span>) %&gt;%
+<span class="st">  </span><span class="kw">collect</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">sepal_length_f =</span> <span class="kw">factor</span>(sepal_length_f, <span class="dt">labels=</span>sepal_split_labels)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(sepal_length_f, Petal_Length)) +
+<span class="st">  </span><span class="kw">geom_boxplot</span>()</code></pre></div>
+<p><img src="fig/spark-dataframe-factor-3.png" title="plot of chunk spark-dataframe-factor" alt="plot of chunk spark-dataframe-factor" style="display: block; margin: auto;" /></p>
+<h3 id="기계학습-예측-모형">6.3. 기계학습 예측 모형</h3>
+<p>기계학습을 위한 모형이 준비되었다면 다음 단계로 스파크 빅데이터에서 <code>sdf_sample</code> 함수를 사용하여 표본을 추출(10%)하여 탐색적 데이터분석(EDA)을 진행하는 것도 권장된다.</p>
+<p>예측모형을 개발하고자 하는 경우 <code>sdf_partition</code> 함수를 통해 훈련데이터와 검증 데이터로 나눠서 훈련데이터를 예측모형(Random Forest) <code>ml_random_forest</code> 함수에 넣어 예측모형을 개발하고 나서, 검증 데이터로 예측모형의 성능을 점검한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 1. 기계학습 -----------------------------------------------</span>
+## 1.1. 표본추출 --------------------------------------------
+iris_sdf_tbl %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">sdf_sample</span>(<span class="dt">fraction =</span> <span class="fl">0.1</span>, <span class="dt">replacement=</span><span class="ot">FALSE</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">compute</span>(<span class="st">&quot;iris_10_pcnt&quot;</span>)</code></pre></div>
+<pre class="output"><code>Source:   query [10 x 5]
+Database: spark connection master=local[8] app=sparklyr local=TRUE
+
+# A tibble: 10 x 5
+   Sepal_Length Sepal_Width Petal_Length Petal_Width    Species
+          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;      &lt;chr&gt;
+ 1          4.4         2.9          1.4         0.2     setosa
+ 2          5.7         4.4          1.5         0.4     setosa
+ 3          5.4         3.9          1.3         0.4     setosa
+ 4          5.0         3.2          1.2         0.2     setosa
+ 5          5.9         3.0          4.2         1.5 versicolor
+ 6          6.4         3.2          5.3         2.3  virginica
+ 7          6.9         3.2          5.7         2.3  virginica
+ 8          5.6         2.8          4.9         2.0  virginica
+ 9          7.2         3.2          6.0         1.8  virginica
+10          7.4         2.8          6.1         1.9  virginica
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">src_tbls</span>(sc)</code></pre></div>
+<pre class="output"><code>[1] &quot;iris&quot;         &quot;iris_10_pcnt&quot; &quot;iris_sepal&quot;  
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">iris_10_pcnt_tbl &lt;-<span class="st"> </span><span class="kw">tbl</span>(sc, <span class="st">&quot;iris_10_pcnt&quot;</span>)
+
+<span class="kw">glimpse</span>(iris_10_pcnt_tbl)</code></pre></div>
+<pre class="output"><code>Observations: 10
+Variables: 5
+</code></pre>
+<pre class="output"><code>Error in if (width[i] &lt;= max_width[i]) next: TRUE/FALSE가 필요한 곳에 값이 없습니다
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 1.2. 훈련/테스트 데이터셋 -------------------------------
+iris_split_tbl &lt;-<span class="st"> </span>iris_sdf_tbl %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">sdf_partition</span>(<span class="dt">training =</span> <span class="fl">0.7</span>, <span class="dt">testing =</span> <span class="fl">0.3</span>)
+
+iris_split_tbl$training %&gt;%<span class="st"> </span>count</code></pre></div>
+<pre class="output"><code>Source:   query [1 x 1]
+Database: spark connection master=local[8] app=sparklyr local=TRUE
+
+# A tibble: 1 x 1
+      n
+  &lt;dbl&gt;
+1   113
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">iris_split_tbl$testing %&gt;%<span class="st"> </span>count</code></pre></div>
+<pre class="output"><code>Source:   query [1 x 1]
+Database: spark connection master=local[8] app=sparklyr local=TRUE
+
+# A tibble: 1 x 1
+      n
+  &lt;dbl&gt;
+1    37
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 1.3. 모형적합 --------------------------------------------
+
+feature_columns &lt;-<span class="st"> </span>iris_split_tbl$training %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">colnames</span>(iris_split_tbl$training) %&gt;%<span class="st"> </span>
+<span class="st">  </span>stringr::<span class="kw">str_subset</span>(<span class="st">&quot;[^Species]&quot;</span>)
+
+iris_rf &lt;-<span class="st"> </span>iris_split_tbl$training %&gt;%
+<span class="st">  </span><span class="kw">ml_random_forest</span>(<span class="st">&quot;Species&quot;</span>, feature_columns)
+
+iris_responses &lt;-<span class="st"> </span>iris_split_tbl$testing %&gt;%
+<span class="st">  </span><span class="kw">select</span>(Species) %&gt;%
+<span class="st">  </span><span class="kw">collect</span>() %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(
+    <span class="dt">predicted_species =</span> <span class="kw">predict</span>(
+      iris_rf,
+      iris_split_tbl$testing
+    )
+  )
+
+<span class="kw">table</span>(iris_responses)</code></pre></div>
+<pre class="output"><code>            predicted_species
+Species      setosa versicolor virginica
+  setosa         10          2         0
+  versicolor      1          6         2
+  virginica       0          3        13
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(iris_responses, <span class="kw">aes</span>(Species, predicted_species)) +
+<span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="fl">0.15</span>, <span class="dt">height=</span><span class="fl">0.15</span>, <span class="kw">aes</span>(<span class="dt">colour =</span> Species), <span class="dt">alpha=</span><span class="fl">0.3</span>) +
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>)</code></pre></div>
+<p><img src="fig/spark-dataframe-ml-1.png" title="plot of chunk spark-dataframe-ml" alt="plot of chunk spark-dataframe-ml" style="display: block; margin: auto;" /></p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://www.datacamp.com/courses/introduction-to-spark-in-r-using-sparklyr">Introduction to Spark in R using sparklyr</a><a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+  </body>
+</html>

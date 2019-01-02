@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: </title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-59802572-17', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <h1 class="title"></h1>
+          <h1 id="기계학습">기계학습</h1>
+<section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>AWS 컴퓨팅 자원을 시나리오별로 활용하는 방법을 살펴본다.</li>
+<li>PC에서 AWS S3 자원만 활용하는 사례를 실습한다.</li>
+<li>클라우드 S3 데이터를 끌어내어 PC에 분석과 기계학습 알고리즘 개발 환경을 구축한다.</li>
+</ul>
+</div>
+</section>
+<h2 id="aws를-활용하는-세가지-시나리오">1. AWS를 활용하는 세가지 시나리오</h2>
+<p>데이터분석을 위해 AWS 활용하는 시나리오는 세가지 방법이 크게 존재한다.</p>
+<ul>
+<li>시나리오 1. : AWS 클라우드의 저장소 기능(S3)만 활용</li>
+<li>시나리오 2. : AWS 클라우드의 연산기능(EC2)만 활용</li>
+<li>시나리오 3. : AWS 클라우드의 저장소 기능(S3)과 연산기능(EC2) 모두 활용</li>
+</ul>
+<p>각 시나리오별 장단점과 필요성은 각자 직면한 환경에 따라 차이가 나기 때문에 우열을 가리는 것은 무의미하다.</p>
+<p><img src="fig/aws-three-scenarios.png" alt="AWS 활용 세가지 시나리오" width="77%" /></p>
+<h2 id="첫번째-시나리오---aws-s3만-활용한-시나리오">2. 첫번째 시나리오 - AWS S3만 활용한 시나리오</h2>
+<p>데이터 분석을 위한 AWS 시나리오는 여러가지가 존재한다. 가장 먼저 떠오르는 작업 방식은</p>
+<ul>
+<li>AWS S3 데이터를 가져와서 로컬 PC에서 분석하는 시나리오</li>
+</ul>
+<p>탐색적 데이터 분석에 적합한 방식으로 S3 적재된 데이터를 CLI나 GUI를 활용하여 꺼내와서 로컬 PC에서 분석한다. 이와 유사하게 개인용으로 드롭박스나 구글 드라이브를 사용하는 경우가 이와 유사하다고 볼 수 있다.</p>
+<p><img src="fig/aws-s3-pc.png" alt="AWS S3 데이터 가져오기" width="77%" /></p>
+<h3 id="환경설정">2.1. 환경설정</h3>
+<p><code>AWS Commmand Line Interface</code> (AWS CLI)를 운영체제에 설치를 하고 파이썬을 설치한다. 중요한 것은 <code>aws --version</code> 명령어를 쳤을 때 환경저보가 출력되어야 한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">C:\Windows\System32&gt;<span class="st"> </span>aws --version
+aws-cli/<span class="fl">1.11.64</span> Python/<span class="fl">3.4.3</span> Windows/<span class="dv">7</span> botocore/<span class="fl">1.5.27</span></code></pre></div>
+<ul>
+<li>AWS CLI 툴체인 설치
+<ul>
+<li><a href="http://docs.aws.amazon.com/cli/latest/userguide/awscli-install-windows.html">AWS CLI 윈도우즈 설치</a></li>
+<li><a href="https://www.python.org/downloads/release/python-343/">파이썬 3.X 설치</a></li>
+<li>파이썬 PIP: <code>pip install --upgrade --user awscli</code></li>
+</ul></li>
+<li>환경설정
+<ul>
+<li>윈도우 단축키 <font face=Wingdings>ÿ</font> + R 단축키를 누르고 나서 <code>cmd</code> 명령어를 쳤을 때 <code>aws --version</code> 명령어가 실행되려면, 환경변수로 <strong>경로(Path)</strong>가 파이썬 AWS CLI 모두 추가되어야 한다.</li>
+</ul></li>
+</ul>
+<h3 id="s3-접근-설정">2.2. S3 접근 설정</h3>
+<p>S3 버킷에 접근하기 위해서는 AWS에서 발급한 토큰이 필요하다. 통상 AWS Access Key와 AWS Secret Access Key 즉 접근키와 접근비번으로 구성된다.</p>
+<p><code>ap-northeast-2</code> 지역명(Region Name)은 <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html">AWS Regions and Endpoints</a>에서 확인이 가능하다. 데이터센터가 위치한 지역과 동일하게 생각하는 것도 한 방법이다. 즉, 데이터센터가 위치한 지역에 있는 특정 컴퓨터에 S3 형태로 데이터가 저장되어 있다.</p>
+<ul>
+<li>AWS Access Key ID : ****************</li>
+<li>AWS Secret Access Key : ****************</li>
+<li>Default region name : ap-northeast-2</li>
+<li>Default output format [None]:</li>
+</ul>
+<p>상기 정보를 CLI의 경우 <code>asw configure</code> 명령어를 실행하고 채워넣거나, S3 브라우저 GUI를 사용하는 경우 메뉴를 찾아 입력시키면 S3에 접속할 수 있다.</p>
+<h3 id="데이터-분석-환경">2.3. 데이터 분석 환경</h3>
+<p>AWS S3 버킷 인증키와 S3버킷에서 데이터를 로컬 PC로 가져올 준비가 완료되면 다음으로 데이터를 분석할 환경을 갖춰야 한다. 가장 많이 사용되는 데이터 분석 언어는 R과 파이썬이다. 물론 이 언어를 데이터 분석 엔진으로 사용을 하지만 개발환경을 갖추어 사용하는 것이 대부분이다. R의 경우 RStudio, 파이썬의 경우 쥬피터가 데이터 분석(과학) 통합개발환경이 된다.</p>
+<p><img src="fig/aws-s3-pc-data-analysis.png" alt="AWS S3 데이터 PC 분석환경" width="77%" /></p>
+<p>기계학습과 연관된 과학컴퓨팅을 목적으로 파이썬을 사용하는 경우 <a href="https://www.continuum.io/Downloads">아나콘다(ANACONDA)</a>를 설치하면 편하다. 파이썬 외에도 기계학습, 데이터 과학을 위해서 분석해야 되는 경우 다수 팩키지를 설치해야 하는데 충돌이나 설치가 되지 않는 문제를 개발사에서 해결하여 제공하기 때문에 성가신 문제는 넘어가고 데이터 분석과 알고리즘 개발에 전념할 수 있다.</p>
+<p>결국 클라우드 S3 저장된 데이터 <code>.csv</code>, <code>.json</code>, <code>.parquet</code> 파일을 CLI, GUI 인터페이스를 통해 로컬 컴퓨터로 가져와서 R이나 파이썬 모두 데이터프레임 형태로 데이터를 가공하여 분석이나 모형개발 작업을 추진한다.</p>
+<h3 id="통합개발환경ide-설치">2.4. 통합개발환경(IDE) 설치</h3>
+<p>파이썬의 경우 CLI 상에서 <code>pip install Jupyter</code> 명령어를 실행하면 간단히 쥬피터가 설치된다. 쥬피터 설치가 완료되면 <code>jupyter notebook</code> 명령어를 실행시키면 웹브라우져가 실행되고 데이터를 분석할 수 있는 준비가 모두 완료된다.</p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h3 id="microsoft-visual-c-10.0-is-required-unable-to-find-vcvarsall.bat-오류"><span class="glyphicon glyphicon-pushpin"></span><code>Microsoft Visual C++ 10.0 is required (Unable to find vcvarsall.bat)</code> 오류</h3>
+</div>
+<div class="panel-body">
+<ul>
+<li><code>pip install Jupyter</code> 설치하면서 오류가 발생되면 <strong>Visual C++ Studio 2010 Express</strong>를 설치한다.</li>
+<li>필요시 <code>c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin</code> 디렉토리로 이동하여 <code>vcvars32.bat</code>을 실행한다.</li>
+</ul>
+</div>
+</aside>
+<p>R을 데이터분석환경을 사용하는 경우 <a href="https://www.rstudio.com/">RStudio</a>를 다운로드 받아 설치한다.</p>
+<h3 id="s3와-통합개발환경-rstudio-쥬피터-데이터-동기화">2.5. S3와 통합개발환경 RStudio, 쥬피터 데이터 동기화</h3>
+<p>PC에서 S3 데이터를 다운로드 받아 RStudio 혹은 아나콘다 쥬피터 노트북으로 통해 데이터를 분석하거나 알고리즘을 개발하는 경우 특정 디렉토리를 작업 폴더로 지정하는 것이 프로젝트로 관리 측면에서 편리성이 있다.</p>
+<p><img src="fig/aws-s3-sync-pc.png" alt="AWS S3 데이터 동기화" width="57%" /></p>
+<ul>
+<li>S3와 PC 디렉토리 동기화: <code>aws s3 sync . s3://버킷명</code> 명령어를 통해 현재 작업디렉토리와 S3 버킷을 동기화한다.</li>
+<li>PC 디렉토리와 RStudio, 쥬피터 노트북 동기화: RStudio의 경우 프로젝트를 생성하여 특정 디렉토리를 동기화한다. 쥬피터 노트북의 경우 작업 디렉토리로 이동하여 <code>jupyter notebook</code> 실행 명령어를 사용하던가, 쥬피터 노트북 실행 아이콘을 우클릭하여 시작 경로를 설정한다.</li>
+</ul>
+<h2 id="두번째-시나리오---ec2-분석-컴퓨터에서-데이터-분석-aws-filezilla-aws-filezilla-screenshot">3. 두번째 시나리오 - EC2 분석 컴퓨터에서 데이터 분석 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></h2>
+<p>두번째 시나리오는 로컬 컴퓨터나 노트북이 너무 구형이라 속도가 늦거나 데이터분석으로 인하여 불필요한 소프트웨어를 너무 많이 깔아 더럽히지 않고자 할 때 AWS 클라우드에 분석용 EC2 컴퓨터를 별도로 갖추고 분석작업을 진행하는 경우다.</p>
+<p><img src="fig/aws-scenario-filezilla-ftp.png" alt="FTP 데이터 이동을 통한 데이터 분석작업" width="37%" /></p>
+<p>AWS 클라우드에 생성시킨 R과 RStudio가 설치된 분석전용 컴퓨터에 접속하기 위해서는 크게 세가지 방법이 많이 사용된다.</p>
+<ul>
+<li>SSH(Secure SHell): 컴퓨터 관리를 위해 포트번호 22를 통해 접속
+<ul>
+<li>R, RStudio, 스파크, <code>xgboost</code>, 텐서플로우, 케라스 설치 등 데이터분석에 필요한 프로그램 추가 삭제 및 사용자 계정관리 등</li>
+</ul></li>
+<li>sFTP(SSH File Transfer Protocol): 로컬 컴퓨터와 클라우드 원격 EC2 컴퓨터 간에 데이터를 주고 받기 위해 접속</li>
+<li>RStudio 웹포트(8787): 데이터 분석 환경(R, RStudio 등)이 원격 EC2 컴퓨터에 설정이 끝나고 sFTP를 통해 분석에 대한 데이터가 준비되면, 원격 EC2 컴퓨터에서 열어논 8787 RStudio 서버를 통해 분석을 웹브라우져 인터페이스를 통해 실시.</li>
+</ul>
+<p><img src="fig/aws-ec2-connect.png" alt="세가지 접속방법" width="57%" /></p>
+<p>컴퓨터 관리를 위한 SSH 로그인 화면과, 파일질라(FileZilla)를 통해 데이터를 로컬 컴퓨터와 주고 받는 화면, 데이터를 포함한 분석환경이 모두 갖춰진 상태에서 8787포트를 통해 RStudio 서버에 웹인터페이스로 접속하여 분석준비를 모두 마친 상황은 다음과 같다.</p>
+<p><img src="fig/aws-ec2-connect-screenshot.png" alt="세가지 접속방법 화면캡쳐" width="87%" /></p>
+<h3 id="ssh-접속">3.1. SSH 접속</h3>
+<p>AWS에서 제공하는 EC2 컴퓨터는 기본적인 운영체제(리눅스)가 깔려 제공된다. 그외 필요한 설정은 본인이 직접 해야 된다. 마치 새로 컴퓨터를 구매한 상황이라고 보면 된다. 데이터 과학을 위해 기본적으로 설치해야 될 소프트웨어가 제법된다. 이런 경우 R, RStudio 등 필요한 소프트웨어를 설치할 때 도움이 많이 되는 것이 <code>ssh</code> 접속이다.</p>
+<p><code>Services</code> → <code>EC2</code> → <code>INSTANCES</code> → <code>instances</code> 로 따라가면 AWS에서 생성시킨 EC2 인스턴스가 나타나는데, 마우스 우클릭하게 되면 메뉴가 나오는데 <code>Connect</code>를 클릭하면 다음과 같이 EC2 인스턴스에 접속할 수 있는 방법이 친절하게 나와있다.</p>
+<p><img src="fig/aws-ec2-connect-ssh.png" alt="SSH 접속" width="87%" /></p>
+<h3 id="sftp-접속">3.2. sFTP 접속</h3>
+<p>EC2 컴퓨터에 FTP가 설치되지 않는 경우 먼저 이를 설치해야 된다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">$<span class="st"> </span>sudo apt-get install vsftpd</code></pre></div>
+<p>FTP 프로그램이 설치되어 로컬 컴퓨터에서 EC2 컴퓨터에 sFTP 로 붙을 준비가 되었다. 파일질라(FileZilla)의 sFTP를 사용하는데 주로 전송시 암호화시켜서 전송하여 보안이 높아진다. 그리고 EC2 컴퓨터 SSH와 동일한 22번 포트를 열어 파일을 주고 받는다.</p>
+<p>좌측 상단에 <code>Site Manager</code>를 클릭해서 필요한 설정을 한다.</p>
+<ul>
+<li>호스트(Host): EC2 컴퓨터 IP주소 입력</li>
+<li>포트(Port): SSH와 동일한 22</li>
+<li>프로토콜(Protocol): SFTP - SSH File Transfer Protocol 선택</li>
+<li>로그온 유형(Logon Type): 키 파일(Key File) 선택</li>
+<li>사용자(User): <code>ubuntu</code></li>
+<li>키 파일(Key File): 인스턴스 생성 시 다운로드한 <code>.pem</code>파일로 설정</li>
+</ul>
+<p><img src="fig/aws-ec2-connect-filezilla.png" alt="FileZilla 접속" width="77%" /></p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h3 id="루트root-계정-로그인"><span class="glyphicon glyphicon-pushpin"></span>루트(<code>root</code>) 계정 로그인</h3>
+</div>
+<div class="panel-body">
+<p>금지된 <code>root</code> 계정 로그인을 하는 방법은 다음과 같다.</p>
+<ol style="list-style-type: decimal">
+<li><code>root</code> 권한으로 로그인 할 수 있도록 권한을 수정
+<ul>
+<li><code>sudo nano /etc/ssh/sshd_config</code> 파일을 열고, <code>PermitRootLogin prohibit-password</code> → <code>PermitRootLogin yes</code> 로 수정</li>
+</ul></li>
+<li><code>root</code> 비밀번호 설정
+<ul>
+<li><code>sudo passwd</code> 명령어로 <code>ubuntu</code> 유저 비밀번호 설정</li>
+<li><code>su root</code> 비밀번호를 입력하여 <code>root</code> 계정으로 바꿈</li>
+</ul></li>
+<li><code>authorized_keys</code> 파일 복사
+<ul>
+<li><code>root</code> 계정 <code>~/.ssh/authorized_keys</code> 파일을 <code>~/.ssh/authorized_keys_bak</code>로 이동
+<ol style="list-style-type: decimal">
+<li><code>su root</code></li>
+<li><code>cd ~/.ssh/</code></li>
+<li><code>mv authorized_keys authorized_keys_bak</code></li>
+</ol></li>
+<li><code>ubuntu</code> 계정 <code>/home/ubuntu/.ssh/authorized_keys</code> 파일 복사
+<ol style="list-style-type: decimal">
+<li><code>cp /home/ubuntu/.ssh/authorized_keys /home/root/.ssh/</code>
+<ul>
+<li>EC2 컴퓨터 생성시 생성한 <code>.pem</code> 파일을 그대로 사용해서 FileZilla <code>root</code> 계정으로 로그인하기 위함.</li>
+</ul></li>
+</ol></li>
+</ul></li>
+<li>서비스 재시작
+<ul>
+<li><code>service sshd restart</code></li>
+<li><code>ubuntu</code> 계정 대신 <code>root</code> 계정으로 로그인 가능하게 됨.</li>
+</ul></li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">$<span class="st"> </span>ssh -i <span class="st">&quot;vxxxxxxxxx.pem&quot;</span> root@ec2-1xx-xx<span class="dv">-22</span>-xxx.ap-northeast<span class="fl">-2.</span>compute.amazonaws.com
+Welcome to Ubuntu <span class="fl">16.04.3</span> <span class="kw">LTS</span> (GNU/Linux <span class="fl">4.4.0</span><span class="dv">-92</span>-generic x86_64)
+
+ *<span class="st"> </span>Documentation:<span class="st">  </span>https:<span class="er">//</span>help.ubuntu.com
+ *<span class="st"> </span>Management:<span class="st">     </span>https:<span class="er">//</span>landscape.canonical.com
+ *<span class="st"> </span>Support:<span class="st">        </span>https:<span class="er">//</span>ubuntu.com/advantage
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+<span class="st">    </span>http:<span class="er">//</span>www.ubuntu.com/business/services/cloud
+
+<span class="dv">0</span> packages can be updated.
+<span class="dv">0</span> updates are security updates.
+
+root@ip-1xx-xx<span class="dv">-22</span>-xxx:<span class="er">~</span><span class="co">#</span></code></pre></div>
+</div>
+</aside>
+<p><code>rstudio</code> 계정에 <code>root</code> 권한을 부여할 경우 보안에는 다소 문제가 있을 수 있으나 데이터 과학 작업을 수행하는데 나름 편리한 점은 있다. <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h3 id="rstudio-계정에-루트root-권한-부여"><span class="glyphicon glyphicon-pushpin"></span><code>rstudio</code> 계정에 루트(<code>root</code>) 권한 부여</h3>
+</div>
+<div class="panel-body">
+<p><code>rstudio</code> 뿐만 아니라 특정 계정에 <code>root</code> 권한을 부여하는 명령어는 다음과 같다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">root@ip<span class="dv">-172-31-22-122</span>:<span class="er">~$</span><span class="st"> </span>sudo usermod -a -G sudo rstudio</code></pre></div>
+</div>
+</aside>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h3 id="rstudio-권한-아래-디렉토리-관리"><span class="glyphicon glyphicon-pushpin"></span><code>rstudio</code> 권한 아래 디렉토리 관리</h3>
+</div>
+<div class="panel-body">
+<p><code>root</code>, <code>ubuntu</code>, <code>rstudio</code> 등 여러 계정이 혼재된 경우 <code>rstudio</code> 계정으로 디렉토리 관리를 일원화 하고자 하는 경우 다음 명령어를 사용한다. <code>/home/rstudio/network_data/</code> 디렉토리를 <code>rstudio</code> 관할로 변경시킴.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">root@ip<span class="dv">-172-31-22-122</span>:<span class="er">~$</span><span class="st"> </span>sudo chown -R rstudio ./network_data/</code></pre></div>
+</div>
+</aside>
+<h3 id="rstudio-connect">3.3. RStudio 8787 접속</h3>
+<p>데이터분석 환경과 데이터를 모두 전달했다면 EC2 컴퓨터에서 데이터분석을 위한 모든 준비가 되었다. EC2 컴퓨터 IP주소 입력를 포트번호 <code>8787</code>을 붙여 접속하게 되면 친숙한 RStudio 개발환경이 나타난다. 로그인을 해야 되기 때문에 rstudio/rstudio 계정으로 로그인하면 된다.</p>
+<h2 id="ec2-s3-s3fs-fuse">4. 세번째 시나리오 - AWS 클라우드의 저장소 기능(S3)과 연산기능(EC2) 모두 활용</h2>
+<p>세번째 시나리오는 데이터도 보안이나 용량문제 등 다양한 사유로 S3에 저장되어 있고, 로컬 컴퓨터나 노트북으로 데이터 분석 작업을 진행하기 곤란한 경우 AWS 클라우드 연산기능(EC2)을 활용하여 데이터 분석 및 모형개발 작업을 수행한다.</p>
+<p><img src="fig/aws-ec2-s3fs-fuse.png" alt="EC2 S3 연결" width="37%" /></p>
+<p>데이버 분석 연산을 담당하는 EC2 컴퓨터와 데이터가 저장된 저장소는 S3로 이 둘을 연결해 주는 도구는 <a href="https://github.com/s3fs-fuse/s3fs-fuse"><code>s3fs-fuse</code></a>로 속도는 많이 느리지만 오랜동안 검증되어 왔고, 다양한 설치방법이 존재하기 때문에 처음 시작하기 딱 좋다. <a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a> 이에 대한 대안으로 <a href="http://bluese05.tistory.com/23">goofys를 이용해 AWS S3 mount 해서 사용하기</a>도 있으니 참조한다.</p>
+<ol style="list-style-type: decimal">
+<li>S3 만 이용하기 위한 사용자를 생성시킨다. 향후 유출이 되더라도 피해를 최소화할 수 있다.
+<ul>
+<li>aws_access_key_id = Axxxxxxxxxxxxxxxxxxxxxxxxxxx</li>
+<li>aws_secret_access_key = Yfaxxxxxxxxxxxxxxxxxxxxxxxx</li>
+</ul></li>
+<li>S3 만 전용으로 접속하여 활용되기 때문에 <strong>AmazonS3FullAccess</strong> 정책(policy)을 적용시킨다.</li>
+<li>S3 서비스트 내부에 EC2 인스턴스와 동기화시킬 버킷(bucket)을 하나 생성시킨다.</li>
+<li>S3 와 EC2 인스턴스를 연결해주는 <code>s3fs-fuse</code>를 설치한다. <code>s3fs-fuse</code> 설치에 필요한 연관 소프트웨어를 우선 설치한다.</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">$<span class="st"> </span>sudo apt-get install build-essential git libfuse-dev libcurl4-openssl-dev libxml2-dev mime-support automake libtool 
+$<span class="st"> </span>sudo apt-get install pkg-config libssl-dev 
+$<span class="st"> </span>git clone https:<span class="er">//</span>github.com/s3fs-fuse/s3fs-fuse
+$<span class="st"> </span>cd s3fs-fuse/
+<span class="er">$</span><span class="st"> </span>./autogen.sh
+$<span class="st"> </span>./configure --prefix=<span class="er">/</span>usr --with-openssl
+$<span class="st"> </span>make
+$<span class="st"> </span>sudo make install</code></pre></div>
+<ol start="5" style="list-style-type: decimal">
+<li>aws_access_key_id/aws_secret_access_key를 EC2 컴퓨터에 반영시킨다.</li>
+<li>s3fs 명령어를 실행하여 S3 버킷과 EC2 컴퓨터 디렉토리를 동기화시킨다.</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rstudio@ip<span class="dv">-172-00-00-000</span>:<span class="er">~$</span><span class="st"> </span>mkdir -p works
+rstudio@ip<span class="dv">-172-00-00-000</span>:<span class="er">~$</span><span class="st"> </span>cd works
+rstudio@ip<span class="dv">-172-00-00-000</span>:<span class="er">~/</span>works$<span class="st"> </span>s3fs victor-seoul ~<span class="er">/</span>works -o allow_other -oumask=<span class="dv">0022</span></code></pre></div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="http://ithub.tistory.com/48">AWS - EC2 인스턴스 FileZilla(sftp)로 접속하기, Fall in IT</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><a href="http://angus.readthedocs.io/en/2014/amazon/transfer-files-between-instance.html">Transferring Files between your laptop and Amazon instance</a><a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p><a href="https://askubuntu.com/questions/168280/how-do-i-grant-sudo-privileges-to-an-existing-user">How do I grant sudo privileges to an existing user?</a><a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p><a href="http://bluese05.tistory.com/22">s3fs를 이용해 AWS S3 mount 해서 사용하기</a><a href="#fnref4">↩</a></p></li>
+</ol>
+</div>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+  </body>
+</html>

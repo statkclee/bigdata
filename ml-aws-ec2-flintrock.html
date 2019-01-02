@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 기계학습</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-59802572-17', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">기계학습</h1></a>
+          <h2 class="subtitle">EC2 스파크 - 부싯돌(flintrock)</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>AWS 위에 스파크 EC2 클러스터를 생성한다.</li>
+<li><code>flintrock</code>을 사용하여 편리하면서도 신속하게 스파크 EC2 클러스터를 AWS에 생성시킨다.</li>
+<li>스파크 EC2 클러스터를 생성, 접근, 중단, 제거한다.</li>
+</ul>
+</div>
+</section>
+<h2 id="aws-ec2를-활용-스파크-클러스터-생성-aws-reference-01-aws-reference-02-aws-reference-03">AWS EC2를 활용 스파크 클러스터 생성 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></h2>
+<p>대용량 데이터를 병렬처리하기 위해, 특히 R을 분석언어로 빅데이터를 분석하고자 하는 사람들이 AWS 위에서 간단히 스파크 클러스터를 구축하고자 하는 노력을 많이 하였다. 가장 대표적인 것이 <code>spark-ec2</code> 프로젝트다.</p>
+<ul>
+<li><a href="https://github.com/amplab/spark-ec2">Scripts used to setup a Spark cluster on EC2</a></li>
+</ul>
+<p>하지만, <code>spark-ec2</code>가 편리성에 초점을 맞춰 개발되고, 특히 현재 저작시점에 <code>ap-northeast-2</code> 서울 리젼에 대한 지원이 되고 있지 않다. <a href="https://github.com/amplab/spark-ec2/issues/94">ap-northeast-2 seoul region support</a> 관련해서 이슈를 제기하니 다들 <code>flintrock</code> 검토를 추천한다.</p>
+<p><a href="https://www.youtube.com/watch?v=3aeIpOGrJOA&amp;t=1104s">Flintrock: A Faster, Better spark-ec2</a> 동영상을 보면 왜 <code>flintrock</code>을 개발하게 되었는지 사례가 나온다. 가장 큰 매력은 속도가 가장 큰 것이고, 이것도 역시 <code>ap-northeast-2</code> 서울 리젼에 대한 이슈가 있는 것으로 파악되어 <code>ap-northeast-1</code> 일본 리젼에 설치를 해본다.</p>
+<iframe width="300" height="180" src="https://www.youtube.com/embed/3aeIpOGrJOA" frameborder="0" allowfullscreen>
+</iframe>
+<h3 id="flintrock-설치-ec2-flintrock"><code>flintrock</code> 설치 <a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></h3>
+<p><code>flintrock</code>을 설치하려면 우선 파이썬3를 설치한다. 그리고 나서 <code>pip3</code> 팩키지 설치 관리자를 통해 <code>flintrock</code>을 설치한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">$<span class="st"> </span>sudo apt-get remove python3-pip; sudo apt-get install python3-pip
+$<span class="st"> </span>sudo pip3 install flintrock</code></pre></div>
+<h3 id="flintrock-환경설정"><code>flintrock</code> 환경설정</h3>
+<p><code>flintrock</code>설치가 되면 <code>flintrock configure</code> 명령어를 통해 EC2 스파크 클러스터 설치를 위한 환경을 설정한다. 예를 들어, <code>ap-northeast-1</code> 리젼, EC2 유형 등.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">$<span class="st"> </span>flintrock configure
+
+services:
+<span class="st">  </span>spark:
+<span class="st">    </span>version:<span class="st"> </span><span class="fl">2.1.0</span>
+    <span class="co"># git-commit: latest  # if not &#39;latest&#39;, provide a full commit SHA; e.g. d6dc12ef0146ae409834c78737c116050961f350</span>
+    <span class="co"># git-repository:  # optional; defaults to https://github.com/apache/spark</span>
+    <span class="co"># optional; defaults to download from from the official Spark S3 bucket</span>
+    <span class="co">#   - must contain a {v} template corresponding to the version</span>
+    <span class="co">#   - Spark must be pre-built</span>
+    <span class="co">#   - must be a tar.gz file</span>
+    <span class="co"># download-source: &quot;https://www.example.com/files/spark/{v}/spark-{v}.tar.gz&quot;</span>
+  hdfs:
+<span class="st">    </span>version:<span class="st"> </span><span class="fl">2.7.3</span>
+    <span class="co"># optional; defaults to download from a dynamically selected Apache mirror</span>
+    <span class="co">#   - must contain a {v} template corresponding to the version</span>
+    <span class="co">#   - must be a .tar.gz file</span>
+    <span class="co"># download-source: &quot;https://www.example.com/files/hadoop/{v}/hadoop-{v}.tar.gz&quot;</span>
+
+provider:<span class="st"> </span>ec2
+
+providers:
+<span class="st">  </span>ec2:
+<span class="st">    </span>key-name:<span class="st"> </span>sohn-jp
+    identity-file:<span class="st"> </span><span class="er">/</span>etc/sohn-jp.pem
+    instance-type:<span class="st"> </span>m3.medium
+    region:<span class="st"> </span>ap-northeast<span class="dv">-1</span>
+    ami:<span class="st"> </span>ami-56d4ad31   <span class="co"># Amazon Linux, us-northeast-1</span>
+    user:<span class="st"> </span>ec2-user
+    tenancy:<span class="st"> </span>default  <span class="co"># default | dedicated</span>
+    ebs-optimized:<span class="st"> </span>no  <span class="co"># yes | no</span>
+    instance-initiated-shutdown-behavior:<span class="st"> </span>terminate  <span class="co"># terminate | stop</span>
+
+launch:
+<span class="st">  </span>num-slaves:<span class="st"> </span><span class="dv">1</span></code></pre></div>
+<p><code>providers</code>에 <code>ec2</code> 항목에 <code>.pem</code> 인증키와 <code>region</code>, <code>ami</code> <code>user</code>등을 설정한다.</p>
+<h3 id="ec2-스파크-클러스터-생성">EC2 스파크 클러스터 생성</h3>
+<p>위와 같은 준비가 완료되면 그 다음은 클러스터 생성 명령은 간단하다. <code>flintrock launch bigdata-cluster</code> 명령어를 실행하게 되면 <code>config.yaml</code> 파일에 설정된 규칙에 맞춰 <code>bigdata-cluster</code>가 생성된다. <code>spark-ec2</code> 보다 클러스터 생성속도가 무척이나 빠르다. 스파크 클러스터가 생성되고 나면 사용한 후에 중단 시킬 경우 <code>flintrock stop bigdata-cluster</code> 명령어를 사용해서 잠시 멈춘다. 만약 클러스터를 삭제하려고 하는 경우 <code>flintrock destroy bigdata-cluster</code> 명령어를 사용한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">$<span class="st"> </span>flintrock launch bigdata-cluster   <span class="co"># `bigdata-cluster` 생성 명령어</span>
+$<span class="st"> </span>flintrock stop bigdata-cluster     <span class="co"># `bigdata-cluster` 중지 명령어</span>
+$<span class="st"> </span>flintrock start bigdata-cluster    <span class="co"># `bigdata-cluster` 시작 명령어</span>
+$<span class="st"> </span>flintrock destroy bigdata-cluster  <span class="co"># `bigdata-cluster` 제거 명령어</span></code></pre></div>
+<h3 id="ec2-스파크-클러스터-접속">EC2 스파크 클러스터 접속</h3>
+<p>EC2 스파크 클러스터가 생성되면 생성된 클러스터에 접속하여 추가적인 작업을 수행한다. 이에 해당되는 명령어는 두가지 방법이 있다.</p>
+<ul>
+<li><code>flintrock login</code> 명령어 사용</li>
+<li><code>ssh -i</code> 명령어 사용</li>
+</ul>
+<p>flintrock의 저자 <code>Nicholas Chammas</code>가 추천하는 <code>flintrock login bigdata-cluster</code> 명령어를 사용하는 방법은 다음과 같다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">$<span class="st"> </span>flintrock login mu-legend-nick
+Warning:<span class="st"> </span>Permanently added <span class="st">&#39;52.79.XX5.2X0&#39;</span> (ECDSA) to the list of known hosts.
+Last login:<span class="st"> </span>Tue Apr  <span class="dv">4</span> <span class="dv">00</span>:<span class="dv">34</span>:<span class="dv">16</span> <span class="dv">2017</span> from <span class="fl">221.140.11.233</span>
+
+       __|<span class="st">  </span>__|_  <span class="er">)</span>
+       _|<span class="st">  </span>(     /<span class="st">   </span>Amazon Linux AMI
+      ___|\___|___|
+
+https:<span class="er">//</span>aws.amazon.com/amazon-linux-ami/<span class="fl">2016.09</span>-release-notes/
+<span class="dv">12</span> <span class="kw">package</span>(s) needed for security, out of <span class="dv">23</span> available
+Run <span class="st">&quot;sudo yum update&quot;</span> to apply all updates.</code></pre></div>
+<p>혹은 <code>ssh</code> 명령어를 <code>.pem</code> 파일을 사용해서 접속한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">$<span class="st"> </span>ssh -i <span class="st">&quot;sohn-jp.pem&quot;</span> ec2-user@ec2<span class="dv">-54-250-192</span><span class="fl">-181.</span>ap-northeast<span class="fl">-1.</span>compute.amazonaws.com</code></pre></div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://alexioannides.com/2016/08/16/building-a-data-science-platform-for-rd-part-1-setting-up-aws/">BUILDING A DATA SCIENCE PLATFORM FOR R&amp;D, PART 1 – SETTING-UP AWS</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><a href="https://alexioannides.com/2016/08/18/building-a-data-science-platform-for-rd-part-2-deploying-spark-on-aws-using-flintrock/">BUILDING A DATA SCIENCE PLATFORM FOR R&amp;D, PART 2 – DEPLOYING SPARK ON AWS USING FLINTROCK</a><a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p><a href="https://alexioannides.com/2016/08/22/building-a-data-science-platform-for-rd-part-3-r-r-studio-server-sparkr-sparklyr/">BUILDING A DATA SCIENCE PLATFORM FOR R&amp;D, PART 3 – R, R STUDIO SERVER, SPARKR &amp; SPARKLYR</a><a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p><a href="https://github.com/nchammas/flintrock">A command-line tool for launching Apache Spark clusters.</a><a href="#fnref4">↩</a></p></li>
+</ol>
+</div>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+  </body>
+</html>
