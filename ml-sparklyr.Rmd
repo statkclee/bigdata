@@ -1,27 +1,32 @@
 ---
 layout: page
-title: xwMOOC 기계학습
-subtitle: dplyr을 Spark 위에 올린 sparklyr
+title: 빋게이터
+subtitle: "Spark와 연결하는 `sparklyr`, `dplyr`, 그리고 기계학습"
+author:
+    name: xwMOOC
+    url: https://www.facebook.com/groups/tidyverse/
+    affiliation: Tidyverse Korea
+date: "`r Sys.Date()`"
 output:
   html_document: 
     toc: yes
-    keep_md: yes
-  pdf_document:
-    latex_engine: xelatex
-mainfont: NanumGothic
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
 ---
  
 ``` {r, include=FALSE}
 source("tools/chunk-options.R")
-library(rebus)
-library(stringr)
-library(stringi)
 library(tidyverse)
 library(sparklyr)
 options(encoding="UTF-8")
 ```
 
-## 1. R과 스파크 [^datacamp-sparklyr]
+# R과 스파크 [^datacamp-sparklyr] {#r-sparklyr}
 
 R은 데이터분석 코드를 빠르고 가독성 좋게 작성하기 좋은 언어다.
 마찬가지로 아파치 스파크(Apache Spark)은 엄청 큰 빅데이터를 빠르게 분석하기 좋도록 설계되었다.
@@ -38,7 +43,7 @@ R이 데이터분석에 최적화되어 있어 시각화나 데이터를 다루�
 
 <img src="fig/sparklyr-datacamp.png" alt="스파크 R 그리고 sparklyr" width="77%" />
 
-## 2. 스파크 헬로우 월드
+# 스파크 헬로우 월드 {#r-sparklyr-hello}
 
 R에서 로컬 컴퓨터에 스파크를 설치하고 이를 운영하는 것은 간단하다.
 `spark_install()` 명령어로 설치하고 나서 `spark_connect()`를 통해 로컬 컴퓨터에 구축된
@@ -47,9 +52,8 @@ R에서 로컬 컴퓨터에 스파크를 설치하고 이를 운영하는 것은
 
 ``` {r spark-helloworld, eval=FALSE}
 # 1. 설치
-install.packages("sparklyr")
 library(sparklyr)
-spark_install()
+# spark_install()
 
 # 2. 스파크 클러스터 연결
 sc <-spark_connect(master="local")
@@ -61,7 +65,7 @@ spark_version(sc=sc)
 spark_disconnect(sc=sc)
 ```
 
-## 3. `csv` 파일 불러오기
+# `csv` 파일 불러오기 {#r-sparklyr-csv}
 
 스파크 클러스터가 완료되면 가장 먼저 해야 할 일은 스파크 클러스터에서 분석할 데이터를 불러오는 것이다.
 `.csv` 파일을 R로 `read_csv()` 함수로 불러오는 것과 마찬가지로 `spark_read_csv()` 함수를 통해 직접 불러오거나,
@@ -90,7 +94,7 @@ iris_tbl <- copy_to(sc, iris)
 src_tbls(sc)
 ```
 
-### 3.1. 빅데이터와 `tibble()` 자료구조
+## 빅데이터와 `tibble()` 자료구조 {#r-sparklyr-tibble}
 
 `copy_to()` 명령어를 통해 반환되는 객체는 `tibble()`이다. 티블은 data.frame 객체를 내부에 갖고 있을 수도 있고,
 원격 객체 (데이터베이스 등)를 갖을 수 있고 다양한 출력명령어를 지원한다.
@@ -98,7 +102,7 @@ src_tbls(sc)
 
 <img src="fig/spark_tbl_make_link.png" alt="스파크 티블 링크" width="77%" />
 
-``` {r spark-tibble, eval=TRUE, message=FALSE, warning=FALSE}
+``` {r spark-tibble, eval=TRUE}
 # iris_tbl 티블 객체에 `iris` 스파크 데이터프레임을 `tbl()` 명령어로 연결
 iris_tbl <- tbl(sc, "iris")
 
@@ -116,10 +120,9 @@ glimpse(iris_tbl)
 `pryr::object_size` 명령어를 통해 크기를 확인할 수 있다.
 
 
-## 4. `dplyr` 데이터 처리
+# `dplyr` 데이터 처리 {#r-sparklyr-tibble-dplyr}
 
-
-### 4.1. `dplyr` 기본 
+## `dplyr` 기본 {#r-sparklyr-tibble-dplyr-basis}
 
 스파크 데이터프레임을 `sparklyr` 팩키지를 통해 `tibble()` 자료형으로 연결시키고 나면 `dplyr` 명령어를 다수 활용할 수 있다.
 가장 기본적인 `dplyr` 명령어는 다음과 같다.
@@ -131,7 +134,7 @@ glimpse(iris_tbl)
 - summarize: 총합/요약
 
 
-``` {r spark-dplyr, message=FALSE, warning=FALSE}
+``` {r spark-dplyr}
 copy_to(sc, iris, overwrite = TRUE)
 
 iris_sdf_tbl <- tbl(sc, "iris")
@@ -161,7 +164,7 @@ iris_sdf_tbl %>% dplyr::select(Sepal_Length, Petal_Length, Species) %>%
                    max_petal_legnth = max(Petal_Length))
 ```
 
-### 4.2. `dplyr` 고급 기능
+## `dplyr` 고급 기능 {#r-sparklyr-tibble-advanced}
 
 변수를 선택할 때 `starts_with`, `ends_with`, `contain` 등을 활용할 수 있고,
 `distinct`도 변수내 포함된 범주를 식별할 때 도움이 많이 된다.
@@ -175,7 +178,7 @@ iris_sdf_tbl %>% dplyr::select(Sepal_Length, Petal_Length, Species) %>%
 `dplyr` R 코드가 SQL 코드로 변환한 것을 확인하고자 할 경우, 혹은 R을 모르는 다른 개발자와 SQL로 의사소통을 하고자 할 때,
 `explain` 명령어를 통해 SQL 코드를 얻을 수 있다.
 
-``` {r spark-dplyr-advanced, message=FALSE, warning=FALSE}
+``` {r spark-dplyr-advanced}
 # 3. 고급 데이터 처리 ------------------------------------------
 ## 3.1. select 
 iris_sdf_tbl %>% dplyr::select(starts_with("Sepal"), Species)
@@ -215,7 +218,7 @@ DBI::dbGetQuery(sc,
                 ORDER BY `mean_sepal_length`")
 ```
 
-## 5. 데이터프레임 변환과 중간결과 저장
+# 데이터프레임 변환과 중간결과 저장 {#r-sparklyr-tibble-save}
 
 영구저장소에 저장된 `.csv` 파일을 메모리로 불러올릴 때 `read_csv` 함수를 사용해서 
 R 데이터 프레임으로 변환시킨다. 마찬가지로 R 데이터프레임을 스파크 클러스터 데이터프레임으로 보낼 때 
@@ -228,7 +231,7 @@ R 데이터 프레임으로 변환시킨다. 마찬가지로 R 데이터프레�
 이런 경우 중간 결과를 저장하기 위해서 `compute` 명령어에 인자값으로 스파크 데이터프레임 이름을 붙이게 되면
 안정적인 후속작업도 가능하다.
 
-``` {r spark-dataframe-checkpoint, message=FALSE, warning=FALSE}
+``` {r spark-dataframe-checkpoint}
 
 # 1. 데이터프레임 변환 -----------------------------------------------
 iris_df <- iris_sdf_tbl %>% 
@@ -246,9 +249,9 @@ src_tbls(sc)
 class(iris_sepal)
 ```
 
-## 6. 기계학습 사전 준비
+# 기계학습 사전 준비 {#r-sparklyr-tibble-ml}
 
-### 6.1. 스파크, R 스키마 비교
+## 스파크, R 스키마 비교 {#r-sparklyr-tibble-schema}
 
 스파크는 엄격한 자료형을 갖고 있고 동시에 
 통계학이나 데이터분석에서 많이 활용되는 요인(factor)에 대한 개념이 없기 때문에
@@ -262,7 +265,7 @@ class(iris_sepal)
 |   문자형       | character | StringType   |
 |   리스트       | list      | ArrayType    |
 
-### 6.2. 스파크에서 제공하는 기능(함수)
+## 스파크에서 제공하는 기능(함수) {#r-sparklyr-tibble-function}
 
 `dplyr`에서 제공되는 함수 외에 함수명 시작이 `ft_`, `sdf_`, `ml_`로 시작되는 함수들이 있다.
 
@@ -274,7 +277,7 @@ class(iris_sepal)
 `ft_bucketizer` 함수를 활용한다. `ft_bucketizer` 함수는 R환경에서 
 `cut()` + `quantile()` 함수를 조합한 기능을 한방에 지원한다.
 
-``` {r spark-dataframe-factor, message=FALSE, warning=FALSE}
+``` {r spark-dataframe-factor}
 # 1. 스파크 데이터프레임 스키마
 (iris_schema <- sdf_schema(iris_sdf_tbl))
 
@@ -320,7 +323,7 @@ iris_sdf_tbl %>%
   geom_boxplot()
 ```
 
-### 6.3. 기계학습 예측 모형 
+## 기계학습 예측 모형  {#r-sparklyr-tibble-predictive-model}
 
 기계학습을 위한 모형이 준비되었다면 다음 단계로 스파크 빅데이터에서 
 `sdf_sample` 함수를 사용하여 표본을 추출(10%)하여 탐색적 데이터분석(EDA)을 진행하는 것도 권장된다.
@@ -329,7 +332,7 @@ iris_sdf_tbl %>%
 훈련데이터를 예측모형(Random Forest) `ml_random_forest` 함수에 넣어 예측모형을 개발하고 나서,
 검증 데이터로 예측모형의 성능을 점검한다. 
 
-``` {r spark-dataframe-ml, message=FALSE, warning=FALSE}
+``` {r spark-dataframe-ml}
 # 1. 기계학습 -----------------------------------------------
 ## 1.1. 표본추출 --------------------------------------------
 iris_sdf_tbl %>% 
