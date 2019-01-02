@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: xwMOOC 기계학습</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-59802572-17', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">xwMOOC 기계학습</h1></a>
+          <h2 class="subtitle">데이터 크롤링: EC2 → S3</h2>
+          <h1 id="epl-data-crawl">AWS 클라우드</h1>
+<p>외부에서 데이터를 클라우드로 가져올 경우 우선 로컬 컴퓨터로 작업을 하고 S3에 옮겨 작업을 하는 경우가 크롤링 프로그램 기능구현 및 테스트를 위해서 우선되어야 한다. 크롤링 프로그램의 기능이 구현되고 테스트를 통해 검증이 되었다면, 다음 단계로 EC2 인스턴스에 크롤링 프로그램을 이관하여 정기적으로 크롤링되어 데이터를 S3 버킷에 쌓는 과정이 후속과정으로 수반된다. 로컬 컴퓨터에서 데이터를 클롤링하여 S3 버킷에 저장하는 방법은 <a href="ml-crawling-s3.html">데이터 크롤링 → S3</a>을 참조한다.</p>
+<p><img src="fig/crawl-aws-ec2-crontabl-s3.png" alt="EC2 크롤링 자동화" width="100%" /></p>
+<p>AWS EC2 인스턴스에서 웹사이트를 크롤링하여 S3에 저장하기 위해서는 우선 로컬 컴퓨터에서 작업한 R코드를 R스크립트로 작성한다. 그리고 나서 우분투 스케쥴러 프로그램인 <code>crontab</code>을 사용하여 주기적으로 크롤링하여 가져온다.</p>
+<h1 id="k-league-data-crawl-script">크롤링 R 코드 스크립트 변환</h1>
+<p><a href="https://sports.news.naver.com/kfootball/schedule/index.nhn?year=2018&amp;category=kleague">네이버 축구 K리그</a> 및 <a href="https://sports.media.daum.net/sports/schedule/kl">다음 축구 K리그</a>를 통해서 데이터를 제공하고 있지만, <a href="http://www.fc-anyang.com/">FC안양</a>, <a href="http://www.bluewings.kr/home">삼성블루윙즈</a> 웹사이트를 통해서 직접 데이터를 긁어오는 것도 좋은 방법인듯 싶다. 이유는 웹사이트가 단순해서 크롤링 기본기술로 쉽게 데이터를 긁어올 수 있다는 점이 장점이 된다. 유사한 방식으로 전구단 웹사이트에서 데이터를 가져와서 정제하면 K리그 전체 경기데이터를 얻을 수 있을 것으로 파악된다. 기술적으로 그렇다는 것으로 저작권을 비롯한 각종 법률적인 사항은 사전에 충분히 확인할 것을 추천한다.</p>
+<p><code>anyang_crawl.R</code> 파일명으로 쉘에서 호출하면 독립적으로 돌아갈 수 있도록 팩키지 설치부터 크롤링 결과 저장까지 자동화시킨다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 파일명: anyang_crawl.R</span>
+<span class="co"># If not installed, install packages -----</span>
+list.of.packages &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;httr&quot;</span>, <span class="st">&quot;rvest&quot;</span>, <span class="st">&quot;tidyverse&quot;</span>)
+new.packages &lt;-<span class="st"> </span>list.of.packages[<span class="op">!</span>(list.of.packages <span class="op">%in%</span><span class="st"> </span><span class="kw">installed.packages</span>()[,<span class="st">&quot;Package&quot;</span>])]
+<span class="cf">if</span>(<span class="kw">length</span>(new.packages)) <span class="kw">install.packages</span>(new.packages)
+
+## libraries
+<span class="kw">library</span>(httr)
+<span class="kw">library</span>(rvest)
+<span class="kw">library</span>(tidyverse)
+
+
+## Crawl website
+anyang_url &lt;-<span class="st"> &quot;http://www.fc-anyang.com/match/match.asp?searchLeague=K%EB%A6%AC%EA%B7%B82&quot;</span>
+
+anyang_resp &lt;-<span class="st"> </span><span class="kw">POST</span>(<span class="dt">url =</span> anyang_url)
+
+<span class="kw">status_code</span>(<span class="dt">x =</span> anyang_resp)
+
+anyang_df &lt;-<span class="st"> </span>anyang_resp <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">read_html</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">html_nodes</span>(<span class="dt">xpath=</span> <span class="st">&#39;//*[@id=&quot;container&quot;]/div/table&#39;</span>)  <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">html_table</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>.[[<span class="dv">1</span>]] <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">tbl_df</span>()
+
+## clean data
+anyang_df &lt;-<span class="st"> </span>anyang_df <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">setNames</span>(<span class="kw">c</span>(<span class="st">&quot;날짜&quot;</span>, <span class="st">&quot;구장&quot;</span>, <span class="st">&quot;리그&quot;</span>, <span class="st">&quot;X1&quot;</span>, <span class="st">&quot;홈팀&quot;</span>, <span class="st">&quot;홈점수&quot;</span>, <span class="st">&quot;X2&quot;</span>, <span class="st">&quot;원정점수&quot;</span>, <span class="st">&quot;원정팀&quot;</span>, <span class="st">&quot;X3&quot;</span>, <span class="st">&quot;승부&quot;</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select_at</span>(<span class="kw">vars</span>(<span class="op">-</span><span class="kw">contains</span>(<span class="st">&quot;X&quot;</span>)))
+## 크롤링 결과 csv 파일 저장
+anyang_filename &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;anyang_&quot;</span>, <span class="kw">Sys.time</span>(), <span class="st">&quot;_df.csv&quot;</span>)
+anyang_df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">write_csv</span>(anyang_filename)</code></pre></div>
+<p><code>anyang_crawl.R</code> R 스크립트를 <code>R CMD BATCH</code> 명령어로 실행시키게 되면 <code>anyang_crawl.log</code> 로그파일에 실행과정 로그가 찍히게 되고, 크롤링 R 스크립트가 실행된 시간이 기록된 <code>.csv</code> 파일이 생성된다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rstudio<span class="op">@</span>ip<span class="op">-</span><span class="dv">172</span><span class="op">-</span>xx<span class="op">-</span>xxx<span class="op">-</span><span class="dv">239</span><span class="op">:</span><span class="er">~$</span><span class="st"> </span>R CMD BATCH anyang_crawl.R anyang_crawl.log
+rstudio<span class="op">@</span>ip<span class="op">-</span><span class="dv">172</span><span class="op">-</span>xx<span class="op">-</span>xxx<span class="op">-</span><span class="dv">239</span><span class="op">:</span><span class="er">~$</span><span class="st"> </span>ls <span class="op">-</span>al
+total <span class="dv">76</span>
+drwxr<span class="op">-</span>xr<span class="op">-</span>x  <span class="dv">8</span> rstudio rstudio <span class="dv">4096</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">12</span> .
+drwxr<span class="op">-</span>xr<span class="op">-</span>x  <span class="dv">5</span> root    root    <span class="dv">4096</span> Sep <span class="dv">18</span> <span class="dv">12</span><span class="op">:</span><span class="dv">51</span> ..
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">3102</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">09</span> anyang_<span class="dv">2018</span><span class="op">-</span><span class="dv">11</span><span class="op">-</span><span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">09</span><span class="op">:</span>35_df.csv
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">3102</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">12</span> anyang_<span class="dv">2018</span><span class="op">-</span><span class="dv">11</span><span class="op">-</span><span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">12</span><span class="op">:</span>04_df.csv
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">3102</span> Nov <span class="dv">13</span> <span class="dv">05</span><span class="op">:</span><span class="dv">37</span> anyang_<span class="dv">2018</span><span class="op">-</span><span class="dv">11</span><span class="op">-</span>13_df.csv
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">3212</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">12</span> anyang_crawl.log
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio  <span class="dv">984</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">09</span> anyang_crawl.R
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio  <span class="dv">220</span> Aug <span class="dv">31</span>  <span class="dv">2015</span> .bash_logout
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">3771</span> Aug <span class="dv">31</span>  <span class="dv">2015</span> .bashrc
+drwxr<span class="op">-</span>xr<span class="op">-</span>x  <span class="dv">2</span> rstudio rstudio <span class="dv">4096</span> Sep <span class="dv">18</span> <span class="dv">12</span><span class="op">:</span><span class="dv">36</span> .dropbox<span class="op">-</span>ami
+drwxr<span class="op">-</span>xr<span class="op">-</span>x  <span class="dv">3</span> rstudio rstudio <span class="dv">4096</span> Sep <span class="dv">11</span> <span class="dv">11</span><span class="op">:</span><span class="dv">44</span> .dropbox<span class="op">-</span>dist
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio  <span class="dv">655</span> May <span class="dv">16</span>  <span class="dv">2017</span> .profile
+drwxr<span class="op">-</span>xr<span class="op">-</span>x  <span class="dv">3</span> rstudio rstudio <span class="dv">4096</span> Sep <span class="dv">18</span> <span class="dv">13</span><span class="op">:</span><span class="dv">42</span> R
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">8233</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">12</span> .RData
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio    <span class="dv">0</span> Sep <span class="dv">18</span> <span class="dv">18</span><span class="op">:</span><span class="dv">18</span> .Rhistory
+drwxr<span class="op">-</span>xr<span class="op">-</span>x <span class="dv">14</span> rstudio rstudio <span class="dv">4096</span> Sep <span class="dv">18</span> <span class="dv">18</span><span class="op">:</span><span class="dv">18</span> .rstudio
+drwxr<span class="op">-</span>xr<span class="op">-</span>x  <span class="dv">3</span> rstudio rstudio <span class="dv">4096</span> Sep <span class="dv">18</span> <span class="dv">12</span><span class="op">:</span><span class="dv">53</span> ShinyApps
+drwxr<span class="op">-</span>xr<span class="op">-</span>x  <span class="dv">3</span> rstudio rstudio <span class="dv">4096</span> Sep <span class="dv">18</span> <span class="dv">13</span><span class="op">:</span><span class="dv">42</span> .subversion</code></pre></div>
+<h1 id="k-league-data-crawl-to-s3-ec2">EC2에서 S3 저장</h1>
+<p><a href="https://github.com/cloudyr/aws.s3">Amazon Simple Storage Service (S3) API Client</a>를 팩키지를 활용하여 S3 버킷에 RStudio IDE를 통해 접근이 가능하다.</p>
+<p>S3 버킷 접근을 위한 키값 설정을 한 후에 <code>put_object()</code> 함수를 사용해서 아마존 AWS S3 버킷에 EC2 인스턴스에 저장된 데이터를 이동시킨다. 버킷명과 디렉토리는 <code>swcarpentry/football</code>이 된다.</p>
+<p>S3 버킷 접근을 위한 키값 설정을 EC2 인스턴스에도 동일하게 해준다. 예를 들어,</p>
+<blockquote>
+<p><code>Rprofile.site</code> 파일 설정</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">root<span class="op">@</span>ip<span class="op">-</span><span class="dv">172</span><span class="op">-</span>XXX<span class="op">-</span>XXX<span class="op">-</span><span class="dv">239</span><span class="op">:</span><span class="er">/</span><span class="co"># find . -name &quot;Rprofile.site&quot;</span>
+.<span class="op">/</span>usr<span class="op">/</span>lib<span class="op">/</span>R<span class="op">/</span>etc<span class="op">/</span>Rprofile.site
+.<span class="op">/</span>etc<span class="op">/</span>R<span class="op">/</span>Rprofile.site</code></pre></div>
+<p><code>Rprofile.site</code> 파일에 “AWS_ACCESS_KEY_ID”, “AWS_SECRET_ACCESS_KEY”, 자격증명(credentials)을 저장시킨다.</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 파일명: anyang_crawl.R</span>
+<span class="co"># If not installed, install packages -----</span>
+list.of.packages &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;httr&quot;</span>, <span class="st">&quot;rvest&quot;</span>, <span class="st">&quot;tidyverse&quot;</span>, <span class="st">&quot;aws.s3&quot;</span>)
+new.packages &lt;-<span class="st"> </span>list.of.packages[<span class="op">!</span>(list.of.packages <span class="op">%in%</span><span class="st"> </span><span class="kw">installed.packages</span>()[,<span class="st">&quot;Package&quot;</span>])]
+<span class="cf">if</span>(<span class="kw">length</span>(new.packages)) <span class="kw">install.packages</span>(new.packages)
+
+## libraries
+<span class="kw">library</span>(httr)
+<span class="kw">library</span>(rvest)
+<span class="kw">library</span>(tidyverse)
+
+## Crawl website
+anyang_url &lt;-<span class="st"> &quot;http://www.fc-anyang.com/match/match.asp?searchLeague=K%EB%A6%AC%EA%B7%B82&quot;</span>
+
+anyang_resp &lt;-<span class="st"> </span><span class="kw">POST</span>(<span class="dt">url =</span> anyang_url)
+
+<span class="kw">status_code</span>(<span class="dt">x =</span> anyang_resp)
+
+anyang_df &lt;-<span class="st"> </span>anyang_resp <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">read_html</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">html_nodes</span>(<span class="dt">xpath=</span> <span class="st">&#39;//*[@id=&quot;container&quot;]/div/table&#39;</span>)  <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">html_table</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>.[[<span class="dv">1</span>]] <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">tbl_df</span>()
+
+## clean data
+anyang_df &lt;-<span class="st"> </span>anyang_df <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">setNames</span>(<span class="kw">c</span>(<span class="st">&quot;날짜&quot;</span>, <span class="st">&quot;구장&quot;</span>, <span class="st">&quot;리그&quot;</span>, <span class="st">&quot;X1&quot;</span>, <span class="st">&quot;홈팀&quot;</span>, <span class="st">&quot;홈점수&quot;</span>, <span class="st">&quot;X2&quot;</span>, <span class="st">&quot;원정점수&quot;</span>, <span class="st">&quot;원정팀&quot;</span>, <span class="st">&quot;X3&quot;</span>, <span class="st">&quot;승부&quot;</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select_at</span>(<span class="kw">vars</span>(<span class="op">-</span><span class="kw">contains</span>(<span class="st">&quot;X&quot;</span>)))
+## 크롤링 결과 csv 파일 저장
+<span class="co"># anyang_filename &lt;- paste0(&quot;anyang_&quot;, Sys.Date(), &quot;_df.csv&quot;)</span>
+anyang_filename &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;anyang_&quot;</span>, <span class="kw">str_replace_all</span>(<span class="kw">Sys.time</span>(), <span class="st">&quot;</span><span class="ch">\\</span><span class="st">s&quot;</span>, <span class="st">&quot;_&quot;</span>), <span class="st">&quot;_df.csv&quot;</span>)
+anyang_df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">write_csv</span>(anyang_filename)
+
+## 크롤링 결과를 S3버킷에 저장
+<span class="kw">library</span>(aws.s3) <span class="co"># devtools::install_github(&quot;cloudyr/aws.s3&quot;)</span>
+
+<span class="co"># S3 버킷 접근을 위한 키값 설정</span>
+<span class="kw">Sys.setenv</span>(<span class="st">&quot;AWS_ACCESS_KEY_ID&quot;</span> =<span class="st"> </span>AWS_ACCESS_KEY_ID,
+           <span class="st">&quot;AWS_SECRET_ACCESS_KEY&quot;</span> =<span class="st"> </span>AWS_SECRET_ACCESS_KEY,
+           <span class="st">&quot;AWS_DEFAULT_REGION&quot;</span> =<span class="st"> &quot;ap-northeast-2&quot;</span>)
+
+<span class="kw">put_object</span>(<span class="dt">file =</span> anyang_filename, <span class="dt">object =</span> anyang_filename, <span class="dt">bucket =</span> <span class="st">&quot;software-carpentry/football&quot;</span>)</code></pre></div>
+<p>동일하게 실생시키게 되면 파일이 시각까지 넣어 EC2 인스턴스에도 저장됨이 확인된다. S3 버킷도 동일하게 확인해 보자.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rstudio<span class="op">@</span>ip<span class="op">-</span><span class="dv">172</span><span class="op">-</span>xx<span class="op">-</span>xxx<span class="op">-</span><span class="dv">239</span><span class="op">:</span><span class="er">~$</span><span class="st"> </span>R CMD BATCH anyang_crawl.R anyang_crawl.log
+total <span class="dv">92</span>
+drwxr<span class="op">-</span>xr<span class="op">-</span>x  <span class="dv">8</span> rstudio rstudio <span class="dv">4096</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">38</span> .
+drwxr<span class="op">-</span>xr<span class="op">-</span>x  <span class="dv">5</span> root    root    <span class="dv">4096</span> Sep <span class="dv">18</span> <span class="dv">12</span><span class="op">:</span><span class="dv">51</span> ..
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">3102</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">09</span> anyang_<span class="dv">2018</span><span class="op">-</span><span class="dv">11</span><span class="op">-</span><span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">09</span><span class="op">:</span>35_df.csv
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">3102</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">12</span> anyang_<span class="dv">2018</span><span class="op">-</span><span class="dv">11</span><span class="op">-</span><span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">12</span><span class="op">:</span>04_df.csv
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">3102</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">37</span> anyang_<span class="dv">2018</span><span class="op">-</span><span class="dv">11</span><span class="op">-</span>13_06_37_49_df.csv
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">3102</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">38</span> anyang_<span class="dv">2018</span><span class="op">-</span><span class="dv">11</span><span class="op">-</span>13_06_38_02_df.csv
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">3102</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">38</span> anyang_<span class="dv">2018</span><span class="op">-</span><span class="dv">11</span><span class="op">-</span>13_<span class="dv">06</span><span class="op">:</span><span class="dv">38</span><span class="op">:</span>49_df.csv
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">3102</span> Nov <span class="dv">13</span> <span class="dv">05</span><span class="op">:</span><span class="dv">37</span> anyang_<span class="dv">2018</span><span class="op">-</span><span class="dv">11</span><span class="op">-</span>13_df.csv
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">3755</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">38</span> anyang_crawl.log
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">1494</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">38</span> anyang_crawl.R
+<span class="op">-</span>rw<span class="op">-------</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio  <span class="dv">176</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">28</span> .bash_history
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio  <span class="dv">220</span> Aug <span class="dv">31</span>  <span class="dv">2015</span> .bash_logout
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">3771</span> Aug <span class="dv">31</span>  <span class="dv">2015</span> .bashrc
+drwxr<span class="op">-</span>xr<span class="op">-</span>x  <span class="dv">2</span> rstudio rstudio <span class="dv">4096</span> Sep <span class="dv">18</span> <span class="dv">12</span><span class="op">:</span><span class="dv">36</span> .dropbox<span class="op">-</span>ami
+drwxr<span class="op">-</span>xr<span class="op">-</span>x  <span class="dv">3</span> rstudio rstudio <span class="dv">4096</span> Sep <span class="dv">11</span> <span class="dv">11</span><span class="op">:</span><span class="dv">44</span> .dropbox<span class="op">-</span>dist
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio  <span class="dv">655</span> May <span class="dv">16</span>  <span class="dv">2017</span> .profile
+drwxr<span class="op">-</span>xr<span class="op">-</span>x  <span class="dv">3</span> rstudio rstudio <span class="dv">4096</span> Sep <span class="dv">18</span> <span class="dv">13</span><span class="op">:</span><span class="dv">42</span> R
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio <span class="dv">8257</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">38</span> .RData
+<span class="op">-</span>rw<span class="op">-</span>r<span class="op">--</span>r<span class="op">--</span><span class="st">  </span><span class="dv">1</span> rstudio rstudio    <span class="dv">0</span> Sep <span class="dv">18</span> <span class="dv">18</span><span class="op">:</span><span class="dv">18</span> .Rhistory
+drwxr<span class="op">-</span>xr<span class="op">-</span>x <span class="dv">14</span> rstudio rstudio <span class="dv">4096</span> Nov <span class="dv">13</span> <span class="dv">06</span><span class="op">:</span><span class="dv">28</span> .rstudio
+drwxr<span class="op">-</span>xr<span class="op">-</span>x  <span class="dv">3</span> rstudio rstudio <span class="dv">4096</span> Sep <span class="dv">18</span> <span class="dv">12</span><span class="op">:</span><span class="dv">53</span> ShinyApps
+drwxr<span class="op">-</span>xr<span class="op">-</span>x  <span class="dv">3</span> rstudio rstudio <span class="dv">4096</span> Sep <span class="dv">18</span> <span class="dv">13</span><span class="op">:</span><span class="dv">42</span> .subversion</code></pre></div>
+<p><code>S3 Management Console</code>로 들어가서 제대로 크롤링 결과가 저장되는지 확인한다.</p>
+<p><img src="fig/crawl-aws-anyang-ec2-s3.png" alt="S3 버킷 EC2 실행" width="100%" /></p>
+<h1 id="k-league-data-crawl-to-s3-ec2-crontab"><code>crontab</code> 자동화</h1>
+<p>마지막으로 crontab 명령어를 실행하여 1분마다 실행되도록 자동화시킨다. 이를 위해서 <code>crontab -e</code> 명령어를 통해서 <code>anyang_crawl.sh</code>을 최초 1분마다 테스트한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="op">*</span><span class="st"> </span><span class="er">*</span><span class="st"> </span><span class="er">*</span><span class="st"> </span><span class="er">*</span><span class="st"> </span><span class="er">*</span><span class="st"> </span><span class="er">/</span>home<span class="op">/</span>rstudio<span class="op">/</span>anyang_crawl.sh<span class="st">`</span></code></pre></div>
+<p><code>anyang_crawl.sh</code> 파일은 앞서 쉘 명령라인에서 실행시킨 명령어를 절대경로로 지정하여 쉘스크립트를 작성한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## anyang_crawl.sh
+<span class="co">#!/bin/sh</span>
+
+R CMD BATCH <span class="op">/</span>home<span class="op">/</span>rstudio<span class="op">/</span>anyang_crawl.R <span class="op">/</span>home<span class="op">/</span>rstudio<span class="op">/</span>anyang_crawl.log</code></pre></div>
+<p>1분단위로 정상적으로 웹페이지를 크롤링하여 가져오는 것이 확인되면 <code>0 7 * * * /home/rstudio/anyang_crawl.sh</code> 와 같이 <code>crontab</code> 명령어를 변경시켜 매일 아침 7시에 크롤링하도록 작업을 바꿔 안정화 시킨다.</p>
+<p><img src="fig/crawl-aws-anyang-ec2-s3-cron.png" alt="S3 버킷 EC2 실행" width="100%" /></p>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+  </body>
+</html>
