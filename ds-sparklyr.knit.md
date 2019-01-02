@@ -6,7 +6,7 @@ author:
     name: xwMOOC
     url: https://www.facebook.com/groups/tidyverse/
     affiliation: Tidyverse Korea
-date: "`r Sys.Date()`"
+date: "2019-01-02"
 output:
   html_document: 
     toc: yes
@@ -20,10 +20,7 @@ editor_options:
 ---
 
 
-``` {r, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
-                    comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
-```
+
 
 <img src="fig/spark-standalone.png" alt="아파치 스파크 sparklyr 설치" width="100%" />
 
@@ -56,7 +53,8 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
 1. RStudio에서 `sparklyr` 팩키지를 설치한다.
 
 
-```{r windows-install, eval=FALSE}
+
+```r
 # 0. 설정환경 확인
 ## JAVA 설정
 Sys.getenv("JAVA_HOME")
@@ -124,7 +122,8 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
     - `export JAVA_CPPFLAGS="/Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/include"`
 1. `source ~/.bash_profile` 명령어를 통해 변경사항을 바로 적용시킨다.
 
-``` {r install-mac, eval=FALSE}
+
+```r
 $ java -version
 java version "1.8.0_111"
 Java(TM) SE Runtime Environment (build 1.8.0_111-b14)
@@ -145,7 +144,8 @@ R로 통계분석을 할 때 `JAVA_HOME`을 설정했지만, 오류가 생기는
 
 [^konlp-error]: [KoNLP에서 아래와 같은 에러가 나올 경우 대처 방법](http://freesearch.pe.kr/archives/3081)
 
-``` {r java-error, eval=FALSE}
+
+```r
 Home $ pwd
 /Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents
 Contents $ nano Info.plist
@@ -167,7 +167,8 @@ Contents $ nano Info.plist
 
 `sparklyr` 팩키지 설치과정은 윈도우 설치과정과 대동소이하다.
 
-``` {r spark, eval=FALSE}
+
+```r
 # 1. sparklyr 팩키지 설치
 install.packages("devtools")
 devtools::install_github("rstudio/sparklyr")
@@ -212,7 +213,8 @@ src_tbls(sc)
 `JDK`는 `JRE`를 포함하고 있어서 `sudo apt-get install default-jdk` 를 통해 함께 설치하는 것을 권장한다.
 그런 경우는 없겠지만, 여러버젼의 자바가 설치된 경우 `sudo update-alternatives --config java` 명령어를 통해 다양한 자바 버젼을 관리한다.
 
-``` {r eval=FALSE}
+
+```r
 $ sudo apt-get update
 $ # sudo apt-get install default-jre 
 $ sudo apt-get install default-jdk # JDK는 JRE를 포함 
@@ -221,7 +223,8 @@ $ sudo apt-get install default-jdk # JDK는 JRE를 포함
 다음으로 `JAVA_HOME`을 설정하는데 `sudo update-alternatives --config java` 명령어로 나온 자바홈 경로를 복사해서 `sudo nano /etc/environment` 에 붙여넣는다.
 `JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"` 마지막으로 `source /etc/environment` 명령어로 변경사항을 적용시킨다.
 
-``` {r eval=FALSE}
+
+```r
 $ sudo update-alternatives --config java
 There is only one alternative in link group java (providing /usr/bin/java): /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 Nothing to configure.
@@ -258,7 +261,8 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
 [Download Apache Spark™](https://spark.apache.org/downloads.html) 사이트를 방문하여 아파치 스파크를 다운로드 한다. 물론 스파크내부에 하둡도 같이 포함되어 있는 것을 다운로드 받으면 편리하다.
 `tar xvf` 명령어로 압축을 풀고 나서 스파크가 설치된 환경변수 디렉토리를 기억해 둔다. 
 
-``` {r eval=FALSE}
+
+```r
 $ wget http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.7.tgz
 $ tar xvf spark-2.1.0-bin-hadoop2.7.tgz
 $ cd spark-2.1.0-bin-hadoop2.7
@@ -289,7 +293,8 @@ $ pwd
 데이터프레임을 스파크 클러스터에 던질 때 사용하는 `copy_to()` 명령어를 사용하여 스파크 분산 환경에서 데이터를 처리한다.
 정반대로 스파크 클러스터에서 꺼내 데이터프레임에서 분석하는 것이 `collect()` 명령어를 사용하는 것이다.
 
-``` {r install-sparklyr, eval=FALSE}
+
+```r
 # 1. 환경설정 ------------------------------------
 library(sparklyr)
 library(tidyverse)
@@ -325,7 +330,8 @@ AWS S3 저장소에 데이터를 저장해서 활용하고, 스파크 클러스�
 
 <img src="fig/spark-s3fs-csv.png" alt="AWS CSV 파일" width="100%" />
 
-``` {r read-csv-with-sparklyr, eval=FALSE}
+
+```r
 # 4. 로컬 CSV 파일 불러오기 -------------------------
 
 flights <- spark_read_csv(sc, "flights_spark", 
