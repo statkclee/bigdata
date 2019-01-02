@@ -1,28 +1,33 @@
 ---
 layout: page
-title: 기계학습
-subtitle: EMR 스파크 클러스터 - wadal
+title: 빅데이터
+subtitle: "EMR 스파크 클러스터 - wadal"
+author:
+    name: xwMOOC
+    url: https://www.facebook.com/groups/tidyverse/
+    affiliation: Tidyverse Korea
+date: "`r Sys.Date()`"
 output:
   html_document: 
-    keep_md: yes
-  pdf_document:
-    latex_engine: xelatex
-mainfont: NanumGothic
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 
-> ## 학습 목표 {.objectives}
->
-> * 단속적으로 필요시 대량 EMR 클러스터를 구축하여 S3 데이터를 분석한다.
-> * AWS EMR 스파크 클러스터를 설치한다.
-
 ``` {r, include=FALSE}
-source("tools/chunk-options.R")
-knitr::opts_chunk$set(error = TRUE)
+# source("tools/chunk-options.R")
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
+                    comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 ```
 
 
-## AWS EMR 서비스
+# AWS EMR 서비스 {#aws-emr}
 
 AWS EC2 인스턴스를 활용하여 스파크 클러스터를 구축하는 것은 데이터를 분석하거나 기계학습 알고리즘을 개발하는 개발자입장에서 어려운 것은 아니지만,
 상당한 시간과 노력을 들여야 하고 항시 하둡을 비롯한 스파크 등 컴퓨팅, 네트워크 환경이 바뀜에 따라 꾸준히 학습해가는 과정이 필요하다.
@@ -36,7 +41,7 @@ AWS EC2 인스턴스를 활용하여 스파크 클러스터를 구축하는 것�
 
 AWS EMR GUI를 활용하여 스파크 클러스터를 구축하는 방식은 [Using sparklyr with an Apache Spark cluster](http://spark.rstudio.com/examples-emr.html) 메뉴얼을 참조한다.
 
-## [와달(wadal)](https://github.com/haje01/wadal)
+# [와달(wadal)](https://github.com/haje01/wadal) {#aws-emr-wadal}
 
 와달은 매번 AWS EMR GUI를 통해 매번 스파크 EMR 클러스터를 생성하는 것을 자동화하고자 웹젠 기술이사로 계신 김정주 TD님이 오픈소스 프로젝트로 진행하고 있다.
 스파크 EC2 클러스터를 구축하고자 하는 경우 기존 spark-ec2를 계승한 [부싯돌(flintrock)](https://github.com/nchammas/flintrock) 프로젝트와 유사할 수 있으나,
@@ -44,7 +49,7 @@ AWS EMR GUI를 활용하여 스파크 클러스터를 구축하는 방식은 [Us
 
 즉, 대용량 데이터를 한번에 일시적으로 처리할 경우 적절한 방식이라고 볼 수 있다.
 
-### 와달 설치
+## 와달 설치 {#aws-emr-wadal-install}
 
 와달 설치는 [GitHub wadal](https://github.com/haje01/wadal) 저장소를 클론하여 가져온다.
 
@@ -52,13 +57,13 @@ AWS EMR GUI를 활용하여 스파크 클러스터를 구축하는 방식은 [Us
 $ git clone git@github.com:haje01/wadal.git
 ```
 
-### 사전 준비(EC2 Pair, S3 버킷)
+## 사전 준비(EC2 Pair, S3 버킷) {#aws-emr-prerequisite}
 
 **EC2 Pair**를 준비하고 EMR 관련 설정을 올릴 수 있는 애셋을 S3 버킷에 준비한다.
 EMR 클러스터가 준비되면 분석코드와 중간 데이터를 저장할 수 있는 S3 버킷도 함께 준비한다.
 
 
-### EMR 프로파일 설정
+## EMR 프로파일 설정 {#aws-emr-profile}
 
 다음으로 AWS EMR 프로파일을 텍스트 편집기를 활용하여 작성한다.
 와달을 설치하면 wadal 디렉토리 내부에 `profile.template`이 있어 이를 열고 필요한 설정을 한다.
@@ -82,7 +87,7 @@ export INIT_ASSET_DIR_S3=S3-URL-FOR-INIT-ASSET
 export NOTEBOOK_S3_BUCKET=YOUR-S3-BUCKET-TO-STORE-NOTEBOOKS
 ```
 
-### 와달 기동
+## 와달 기동 {#aws-emr-wadal-run}
 
 모든 준비가 완료되었다면, 와달 명령어를 통해 AWS EMR 스파크 클러스터를 생성시킬 수 있다.
 
