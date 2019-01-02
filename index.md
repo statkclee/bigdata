@@ -23,7 +23,7 @@ title: 빅데이터
         1. [스파크 EC2 클러스터 - 데이터과학 툴체인(R, sparklyr)](ml-aws-ec2-flintrock-sparklyr.html)
     1. [EMR 스파크 클러스터 - wadal](ml-emr-wadal.html)
     1. [분석할 데이터를 스파크에 적재하는 방법 - S3 포함](ml-ec2-s3.html)
-    1. [dplyr을 Spark 위에 올린 sparklyr](ml-sparklyr.html)
+    1. ["Spark와 연결하는 `sparklyr`, `dplyr`, 그리고 기계학습"](ml-sparklyr.html)
 - **AWS 클라우드**
     1. [데이터 크롤링 &rarr; S3](ml-crawling-s3.html)
     1. [데이터 크롤링: EC2 &rarr; S3](ml-crawling-ec2-s3.html)
