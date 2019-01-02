@@ -30,6 +30,22 @@ title: 빅데이터
 - **[스파크(Spark)](http://statkclee.github.io/parallel-r/spark-mooc.html)**
     * [SparkR 하둡 클러스터 설치](ds-spark-hadoop-install.html)
     * [$H_2 O$ 하둡 스파크 클러스터 설치](ds-h2o-spark-hadoop.html)
+1. **빅데이터**
+    - [빅데이터 하드웨어, 맵리듀스, 스파크](big-data-hw.html)    
+    - [스파크 이해하기](spark-mooc.html)
+    - **SparkR 설치**
+        - [SparkR 설치](spark-hadoop-install.html)
+        - [SparkR 헬로 월드](sparkr-hello-world.html)
+        - [SparkR 도커](sparkr-docker.html)
+        - [우분투 SparkR 설치](sparkr-ubuntu.html)
+    - [SparkR 들어가며](sparkr-intro.html)
+1. [$H_2 O$ 기계학습](h20-arch.html)
+    - [$H_2 O$ R 연습문제](h2o-r-exercise.html)
+    - [$H_2 O$ 헬로 월드](h2o-hello-world.html)
+    - [$H_2 O$ 앙상블 모형](h2o-ensemble-higgs.html)
+    - [$H_2 O$ GBM 모형 세부조정](h2o-gbm-titanic.html)
+    - [$H_2 O$ vs 딥러닝 랜딩클럽 대출 데이터](h2o-deep-learning-landingclub.html)
+
 
 ### [xwMOOC 오픈 교재](https://statkclee.github.io/xwMOOC/)
 

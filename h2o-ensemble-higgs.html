@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: xwMOOC 딥러닝</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    
+    
+    <!--
+    <div id="google_translate_element"></div><script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'ko', includedLanguages: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+    }
+    </script><script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    -->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">xwMOOC 딥러닝</h1></a>
+          <h2 class="subtitle"><span class="math inline">\(H_2 O\)</span> 앙상블 모형</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li><span class="math inline">\(H_2 O\)</span> 앙상블 모형을 이해한다.</li>
+<li>슈퍼학습기에 대한 전반적인 의미를 이해한다.</li>
+<li>캐글 신용데이터를 통해 2년내 신용불량 위험을 예측한다.</li>
+</ul>
+</div>
+</section>
+<h3 id="앙상블-모형-h2o-ensemble">1. 앙상블 모형 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h3>
+<p>앙상블 모형은 배깅, 부스팅, 스택쌓기 등 다양한 모형조합 알고리즘이 존재한다.</p>
+<table>
+<colgroup>
+<col width="32%" />
+<col width="67%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">앙상블 모형</th>
+<th align="left">특징</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">배깅(Bagging)</td>
+<td align="left">* 분산을 줄이고, 정확도를 향상</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">* 이상치와 잡음이 있는 데이터에 강건</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">* 흔히 의사결정나무(Decision Tree)와 함께 사용, 즉 확률숲(Random Forest)</td>
+</tr>
+<tr class="even">
+<td align="left">————————</td>
+<td align="left">—————————————————</td>
+</tr>
+<tr class="odd">
+<td align="left">부스팅(Boosting)</td>
+<td align="left">* 분산을 줄이고, 정확도를 향상</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">* 이상치와 잡음이 있는 데이터에 강건하지 않음</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">* 유연성 – 어떤 유형의 손실함수와 함께 사용가능</td>
+</tr>
+<tr class="even">
+<td align="left">————————</td>
+<td align="left">—————————————————</td>
+</tr>
+<tr class="odd">
+<td align="left">스택쌓기(Stacking)</td>
+<td align="left">* 강력한 성능을 갖는 다양한 분류학습기를 앙상블로 조합</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">* “메타학습기(metalearner)” 알고리즘을 사용하여 다음 수준 기계학습을 통해 기초 학습기에 대한 최적의 조합을 찾아내도록 학습.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>슈퍼학습기(Super learner)</strong> 는 버클리 통계학과 교수 Mark van der Laan가 2007년 발표한 논문에 뿌리를 두고 있다. 물론 그 이전에 관련된 연구를 지속적으로 진행하였으며, 슈퍼학습기가 점근적으로 최적 조합이라는 것을 증명한 이론적 토대를 제공했으며 2010년 첫 R 코드로 구현되었고, <a href="https://cran.r-project.org/web/packages/SuperLearner/index.html">SuperLearner - Super Learner Prediction</a>, <a href="https://cran.r-project.org/web/packages/tmle/index.html">tlme</a>로 CRAN에서 설치가능하다.</p>
+<p>슈퍼학습기 이전에 David H. Wolpert가 1992년 <strong>Stacked Generalization</strong> 으로 메타학습기를 통한 스택쌓기를 처음 공식화했고, Leo Breiman 교수가 1996년 <strong>Stacked Regressions</strong> 을 제안했고, 이 연구결과가 슈퍼학습기로 이어졌다.</p>
+<h3 id="슈퍼학습기-알고리즘">2. 슈퍼학습기 알고리즘</h3>
+<p><strong>“수준 0(Level-zero)”</strong> 데이터는 전통적인 통계모형에 사용된 데이터 형태로 이해하면 쉽다. 즉, 설계행렬 <span class="math inline">\(X\)</span>와 종속변수 <span class="math inline">\(y\)</span>로 모형 모수와 함께 기본 학습기를 지정한다. 필요하면 다른 알고리즘을 지정해서 메타 학습기를 지정하기도 한다. 그리고 나서 k-집단 교차타당도를 기본학습기에 적용하여 성능을 평가한다.</p>
+<p><img src="fig/h2o_level_zero.png" alt="수준 0 데이터" width="25%"></p>
+<p><strong>“수준 1(Level-One)”</strong> 데이터는 k-집단 교차타당도를 적용한 기본학습기에서 나온 예측값을 수집한다. 이를 칼럼마다 모아 새로운 설계 행렬 <span class="math inline">\(Z\)</span>를 생성한다. <span class="math inline">\(Z\)</span>, <span class="math inline">\(y\)</span>를 사용해서 메타학습기를 훈련시켜 최적 모형을 개발한다.</p>
+<p><img src="fig/h2o_level_one.png" alt="수준 1 데이터" width="60%"></p>
+<p>슈퍼학습기는 교차타당도를 통해 다른 모수를 갖는 다양한 모형을 명세하여 모형선택과정을 거친다는 점에서 격자탐색(Grid Search)과 임의탐색(Random Search) 과정을 거치는 모수 미세조정, 모수 탐색 방법론과 맥을 함께 한다. 하지만, 메타러닝 단계로 알려진 슈퍼학습기 알고리즘 후반부는 또다른 모형을 하나 생성한다는 점에서 차별점이 있다.</p>
+<h3 id="캐글-신용점수-사례">3. 캐글 신용점수 사례</h3>
+<p><a href="https://www.kaggle.com/c/GiveMeSomeCredit">캐글, Give Me Some Credit</a> 데이터로 신용을 제공한 후 2년안에 누가 신용불량자로 될 확률이 높은지 예측하는 대회다.</p>
+<h4 id="h_2-o-클러스터-및-환경설정">3.1. <span class="math inline">\(H_2 O\)</span> 클러스터 및 환경설정</h4>
+<ol style="list-style-type: decimal">
+<li><code>h2o</code> 팩키지와 <code>h2oEnsemble</code> 팩키지를 설치하고, <span class="math inline">\(H_2 O\)</span> 클러스터를 생성한다.</li>
+<li><span class="math inline">\(H_2 O\)</span> 클러스터를 <code>nthreads = -1</code> 최대 코어수와 <code>max_mem_size = '8g'</code> 최대 메모리 8G를 설정하고 생성한다.</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##=========================================================================
+## 01. H2O 설치: http://learn.h2o.ai/content/tutorials/ensembles-stacking/
+##=========================================================================
+<span class="co"># 1. 기존 H2O 제거</span>
+if (<span class="st">&quot;package:h2o&quot;</span> %in%<span class="st"> </span><span class="kw">search</span>()) { <span class="kw">detach</span>(<span class="st">&quot;package:h2o&quot;</span>, <span class="dt">unload=</span><span class="ot">TRUE</span>) }
+if (<span class="st">&quot;h2o&quot;</span> %in%<span class="st"> </span><span class="kw">rownames</span>(<span class="kw">installed.packages</span>())) { <span class="kw">remove.packages</span>(<span class="st">&quot;h2o&quot;</span>) }
+
+<span class="co"># 2. H2O 의존성 설치</span>
+pkgs &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;methods&quot;</span>,<span class="st">&quot;statmod&quot;</span>,<span class="st">&quot;stats&quot;</span>,<span class="st">&quot;graphics&quot;</span>,<span class="st">&quot;RCurl&quot;</span>,<span class="st">&quot;jsonlite&quot;</span>,<span class="st">&quot;tools&quot;</span>,<span class="st">&quot;utils&quot;</span>)
+for (pkg in pkgs) {
+  if (!<span class="st"> </span>(pkg %in%<span class="st"> </span><span class="kw">rownames</span>(<span class="kw">installed.packages</span>()))) { <span class="kw">install.packages</span>(pkg) }
+}
+
+<span class="co"># 3. H2O 설치</span>
+<span class="kw">install.packages</span>(<span class="st">&quot;h2o&quot;</span>, <span class="dt">repos=</span>(<span class="kw">c</span>(<span class="st">&quot;http://s3.amazonaws.com/h2o-release/h2o/master/1497/R&quot;</span>, <span class="kw">getOption</span>(<span class="st">&quot;repos&quot;</span>))))
+
+<span class="co"># 4. h2o-ensemble 팩키지 설치</span>
+<span class="co">#library(devtools)</span>
+<span class="co">#install_github(&quot;h2oai/h2o-3/h2o-r/ensemble/h2oEnsemble-package&quot;)</span>
+<span class="kw">install.packages</span>(<span class="st">&quot;https://h2o-release.s3.amazonaws.com/h2o-ensemble/R/h2oEnsemble_0.1.8.tar.gz&quot;</span>, <span class="dt">repos =</span> <span class="ot">NULL</span>)
+
+<span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 01.1. H2O 클러스터 환경설정</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+
+<span class="kw">library</span>(h2o)
+<span class="kw">library</span>(h2oEnsemble)  <span class="co"># This will load the `h2o` R package as well</span>
+<span class="kw">h2o.init</span>(<span class="dt">nthreads =</span> -<span class="dv">1</span>, <span class="dt">ip =</span> <span class="st">&#39;localhost&#39;</span>, <span class="dt">port =</span> <span class="dv">54321</span>, <span class="dt">max_mem_size =</span> <span class="st">&#39;8g&#39;</span>)  <span class="co"># H2O 클러스터를 최대 코어수에 맞춰 생성 </span>
+<span class="kw">h2o.removeAll</span>() <span class="co"># Clean slate - just in case the cluster was already running</span>
+<span class="co"># 작업 종료후 h2o 클러스터 종료 명령어</span>
+<span class="co">#h2o.shutdown()</span></code></pre></div>
+<h4 id="캐글-신용평가-데이터-준비">3.2. 캐글 신용평가 데이터 준비</h4>
+<p><a href="https://www.kaggle.com/c/GiveMeSomeCredit/data">Give Me Some Credit</a> 데이터 다운로드 사이트로 이동해서 <code>cs-training.csv</code> (7.21 MB) 데이터를 다운로드 받는다.</p>
+<p>그리고, 종속변수 2년내 신용불량 여부가 <code>SeriousDlqin2yrs</code> 변수에 저장되어 있으니 이를 종속변수로 두고, 나머지를 독립변수로 설정한다.</p>
+<p>별도 데이터 변환 및 정제 과정은 생략한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##=========================================================================
+## 02. H2O 데이터 가져오기
+##=========================================================================
+
+train &lt;-<span class="st"> </span><span class="kw">h2o.importFile</span>(<span class="dt">path =</span> <span class="kw">normalizePath</span>(<span class="st">&quot;~/kaggle-credit/cs-training.csv&quot;</span>))
+
+y &lt;-<span class="st"> &quot;SeriousDlqin2yrs&quot;</span>
+x &lt;-<span class="st"> </span><span class="kw">setdiff</span>(<span class="kw">names</span>(train), y)
+
+train[,y] &lt;-<span class="st"> </span><span class="kw">as.factor</span>(train[,y])  
+
+##=========================================================================
+## 03. H2O 데이터 정제 과정
+##=========================================================================
+
+<span class="co"># 별도 정제 및 변환과정 생략</span></code></pre></div>
+<h4 id="슈퍼학습기-모형-적합">3.3. 슈퍼학습기 모형 적합</h4>
+<p>일반화 선형모형(GLM), 확률숲(RF), Gradient Boosting Machine, 딥러닝(DL)을 기본 학습기로 두고, 2차 메타학습기로 일반화 선형모형(GLM)을 두는 슈퍼학습기 모형을 설정하고 <span class="math inline">\(H_2 O\)</span> 클러스터에서 신용불량 예측모형을 개발한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##=========================================================================
+## 04. 슈퍼 학습기
+##=========================================================================
+
+learner &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;h2o.glm.wrapper&quot;</span>, <span class="st">&quot;h2o.randomForest.wrapper&quot;</span>, 
+             <span class="st">&quot;h2o.gbm.wrapper&quot;</span>, <span class="st">&quot;h2o.deeplearning.wrapper&quot;</span>)
+metalearner &lt;-<span class="st"> &quot;h2o.glm.wrapper&quot;</span>
+
+fit &lt;-<span class="st"> </span><span class="kw">h2o.ensemble</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, 
+                    <span class="dt">training_frame =</span> train, 
+                    <span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>, 
+                    <span class="dt">learner =</span> learner, 
+                    <span class="dt">metalearner =</span> metalearner,
+                    <span class="dt">cvControl =</span> <span class="kw">list</span>(<span class="dt">V =</span> <span class="dv">5</span>))
+
+pred &lt;-<span class="st"> </span><span class="kw">predict</span>(fit, train)
+predictions &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(pred$pred)[,<span class="dv">3</span>]  <span class="co">#third column is P(Y==1)</span>
+labels &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(train[,y])[,<span class="dv">1</span>]</code></pre></div>
+<h4 id="슈퍼학습기-모형-평가">3.4. 슈퍼학습기 모형 평가</h4>
+<p><code>cvAUC</code> 팩키지를 통해 AUC 면적을 최대화한 개별 모형성능을 살펴본다. 가장 성능이 좋게 나온 것은 확률숲(randomForest)으로 거의 1에 수렴하는 0.985가 나온다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(cvAUC)
+L &lt;-<span class="st"> </span><span class="kw">length</span>(learner)
+auc &lt;-<span class="st"> </span><span class="kw">sapply</span>(<span class="kw">seq</span>(L), function(l) cvAUC::<span class="kw">AUC</span>(<span class="dt">predictions =</span> <span class="kw">as.data.frame</span>(pred$basepred)[,l], <span class="dt">labels =</span> labels)) 
+<span class="kw">data.frame</span>(learner, auc)</code></pre></div>
+<pre class="output"><code>                   learner       auc
+1          h2o.glm.wrapper 0.6987710
+2 h2o.randomForest.wrapper 0.9850741
+3          h2o.gbm.wrapper 0.8410525
+4 h2o.deeplearning.wrapper 0.8215124</code></pre>
+<p>슈퍼학습기를 통해 두번째 모형을 돌린 결과 성능이 0.965로 확률숲보다 약간 떨어지는 것으로 나온다. 생각해보면 기본 학습기 중 일반화 선형모형의 AUC가 0.698로 낮은 것도 설명이 가능한 것으로 보인다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cvAUC::<span class="kw">AUC</span>(<span class="dt">predictions =</span> predictions, <span class="dt">labels =</span> labels)</code></pre></div>
+<pre class="output"><code>[1] 0.9652024</code></pre>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="http://learn.h2o.ai/content/tutorials/ensembles-stacking/">Ensembles - Stacking, Super Learner</a><a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </body>
+</html>
