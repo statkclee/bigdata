@@ -24,9 +24,12 @@ title: 빅데이터
     1. [EMR 스파크 클러스터 - wadal](ml-emr-wadal.html)
     1. [분석할 데이터를 스파크에 적재하는 방법 - S3 포함](ml-ec2-s3.html)
     1. ["Spark와 연결하는 `sparklyr`, `dplyr`, 그리고 기계학습"](ml-sparklyr.html)
-- **AWS 클라우드**
+- **웹 크롤링(Crawling)**
     1. [데이터 크롤링 &rarr; S3](ml-crawling-s3.html)
     1. [데이터 크롤링: EC2 &rarr; S3](ml-crawling-ec2-s3.html)
+- **[스파크(Spark)](http://statkclee.github.io/parallel-r/spark-mooc.html)**
+    * [SparkR 하둡 클러스터 설치](ds-spark-hadoop-install.html)
+    * [$H_2 O$ 하둡 스파크 클러스터 설치](ds-h2o-spark-hadoop.html)
 
 ### [xwMOOC 오픈 교재](https://statkclee.github.io/xwMOOC/)
 
