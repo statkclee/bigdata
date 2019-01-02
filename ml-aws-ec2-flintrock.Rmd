@@ -1,29 +1,41 @@
 ---
 layout: page
-title: 기계학습
-subtitle: EC2 스파크 - 부싯돌(flintrock)
+title: 빅데이터
+subtitle: "EC2 스파크 - 부싯돌(flintrock)"
+author:
+    name: xwMOOC
+    url: https://www.facebook.com/groups/tidyverse/
+    affiliation: Tidyverse Korea
+date: "`r Sys.Date()`"
 output:
   html_document: 
-    keep_md: yes
-  pdf_document:
-    latex_engine: xelatex
-mainfont: NanumGothic
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 
-> ## 학습 목표 {.objectives}
->
-> * AWS 위에 스파크 EC2 클러스터를 생성한다.
-> * `flintrock`을 사용하여 편리하면서도 신속하게 스파크 EC2 클러스터를 AWS에 생성시킨다.
-> * 스파크 EC2 클러스터를 생성, 접근, 중단, 제거한다.
+``` {r, include=FALSE}
+# source("tools/chunk-options.R")
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
+                    comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+```
+
 
 ``` {r, include=FALSE}
 source("tools/chunk-options.R")
 knitr::opts_chunk$set(error = TRUE)
 ```
 
-## AWS EC2를 활용 스파크 클러스터 생성 [^aws-reference-01] [^aws-reference-02] [^aws-reference-03]
+# AWS EC2를 활용 스파크 클러스터 생성 [^aws-reference-01] [^aws-reference-02] [^aws-reference-03] {#aws-flintrock-setup}
 
+AWS 위에 스파크 EC2 클러스터를 생성하는데 `flintrock`을 사용하여 편리하면서도 신속하게 스파크 EC2 클러스터를 AWS에 생성시킨다.
+스파크 EC2 클러스터를 생성, 접근, 중단, 제거한다.
 
 [^aws-reference-01]: [BUILDING A DATA SCIENCE PLATFORM FOR R&D, PART 1 – SETTING-UP AWS](https://alexioannides.com/2016/08/16/building-a-data-science-platform-for-rd-part-1-setting-up-aws/)
 [^aws-reference-02]: [BUILDING A DATA SCIENCE PLATFORM FOR R&D, PART 2 – DEPLOYING SPARK ON AWS USING FLINTROCK](https://alexioannides.com/2016/08/18/building-a-data-science-platform-for-rd-part-2-deploying-spark-on-aws-using-flintrock/)
@@ -42,7 +54,7 @@ knitr::opts_chunk$set(error = TRUE)
 
 <iframe width="300" height="180" src="https://www.youtube.com/embed/3aeIpOGrJOA" frameborder="0" allowfullscreen></iframe>
 
-### `flintrock` 설치 [^ec2-flintrock]
+## `flintrock` 설치 [^ec2-flintrock]  {#aws-flintrock-install}
 
 [^ec2-flintrock]: [A command-line tool for launching Apache Spark clusters.](https://github.com/nchammas/flintrock)
 
@@ -53,7 +65,7 @@ $ sudo apt-get remove python3-pip; sudo apt-get install python3-pip
 $ sudo pip3 install flintrock
 ```
 
-### `flintrock` 환경설정
+## `flintrock` 환경설정 {#aws-flintrock-configure}
 
 `flintrock`설치가 되면 `flintrock configure` 명령어를 통해 EC2 스파크 클러스터 설치를 위한 환경을 설정한다.
 예를 들어, `ap-northeast-1` 리젼, EC2 유형 등.
@@ -99,7 +111,7 @@ launch:
 `providers`에 `ec2` 항목에 `.pem` 인증키와 `region`, `ami` `user`등을 설정한다.
 
 
-### EC2 스파크 클러스터 생성 
+## EC2 스파크 클러스터 생성  {#aws-flintrock-cluster}
 
 위와 같은 준비가 완료되면 그 다음은 클러스터 생성 명령은 간단하다. 
 `flintrock launch bigdata-cluster` 명령어를 실행하게 되면 `config.yaml` 파일에 설정된 규칙에 맞춰 `bigdata-cluster`가 생성된다.
@@ -115,7 +127,7 @@ $ flintrock destroy bigdata-cluster  # `bigdata-cluster` 제거 명령어
 ```
 
 
-### EC2 스파크 클러스터 접속
+## EC2 스파크 클러스터 접속 {#aws-flintrock-connect}
 
 EC2 스파크 클러스터가 생성되면 생성된 클러스터에 접속하여 추가적인 작업을 수행한다. 
 이에 해당되는 명령어는 두가지 방법이 있다. 

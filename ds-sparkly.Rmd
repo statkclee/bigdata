@@ -1,6 +1,6 @@
 ---
 layout: page
-title: 기계 학습
+title: 빅데이터
 subtitle: 단독형 스파크 설치 - PC/노트북, EC2 원격 컴퓨터
 author:
     name: xwMOOC
