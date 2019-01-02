@@ -1,40 +1,45 @@
 ---
 layout: page
-title: 기계학습
-subtitle: 시나리오별 클라우드(AWS) 컴퓨팅 자원을 데이터 과학에 활용
+title: 빅데이터
+subtitle: "시나리오별 클라우드(AWS) 컴퓨팅 자원을 데이터 과학에 활용"
+author:
+    name: xwMOOC
+    url: https://www.facebook.com/groups/tidyverse/
+    affiliation: Tidyverse Korea
+date: "`r Sys.Date()`"
 output:
   html_document: 
-    keep_md: yes
-  pdf_document:
-    latex_engine: xelatex
-mainfont: NanumGothic
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 
-> ## 학습 목표 {.objectives}
->
-> * AWS 컴퓨팅 자원을 시나리오별로 활용하는 방법을 살펴본다.
-> * PC에서 AWS S3 자원만 활용하는 사례를 실습한다.
-> * 클라우드 S3 데이터를 끌어내어 PC에 분석과 기계학습 알고리즘 개발 환경을 구축한다.
-
 ``` {r, include=FALSE}
-source("tools/chunk-options.R")
-knitr::opts_chunk$set(error = TRUE)
+# source("tools/chunk-options.R")
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
+                    comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 ```
 
-## 1. AWS를 활용하는 세가지 시나리오
+
+# AWS를 활용하는 세가지 시나리오 {#aws-scenario}
 
 데이터분석을 위해 AWS 활용하는 시나리오는 세가지 방법이 크게 존재한다. 
 
-- 시나리오 1. : AWS 클라우드의 저장소 기능(S3)만 활용
-- 시나리오 2. : AWS 클라우드의 연산기능(EC2)만 활용
-- 시나리오 3. : AWS 클라우드의 저장소 기능(S3)과 연산기능(EC2) 모두 활용
+1. 시나리오 : AWS 클라우드의 저장소 기능(S3)만 활용
+1. 시나리오 : AWS 클라우드의 연산기능(EC2)만 활용
+1. 시나리오 : AWS 클라우드의 저장소 기능(S3)과 연산기능(EC2) 모두 활용
 
 각 시나리오별 장단점과 필요성은 각자 직면한 환경에 따라 차이가 나기 때문에 우열을 가리는 것은 무의미하다.
 
 <img src="fig/aws-three-scenarios.png" alt="AWS 활용 세가지 시나리오" width="77%" />
 
-## 2. 첫번째 시나리오 - AWS S3만 활용한 시나리오
+# 시나리오: AWS S3만 활용한 시나리오 {#aws-scenario-01}
 
 데이터 분석을 위한 AWS 시나리오는 여러가지가 존재한다. 가장 먼저 떠오르는 작업 방식은 
 
@@ -45,7 +50,7 @@ knitr::opts_chunk$set(error = TRUE)
 
 <img src="fig/aws-s3-pc.png" alt="AWS S3 데이터 가져오기" width="77%" />
 
-### 2.1. 환경설정 
+## 환경설정 {#aws-scenario-01-setup}
 
 `AWS Commmand Line Interface` (AWS CLI)를 운영체제에 설치를 하고 파이썬을 설치한다. 
 중요한 것은 `aws --version` 명령어를 쳤을 때 환경저보가 출력되어야 한다. 
@@ -63,7 +68,7 @@ aws-cli/1.11.64 Python/3.4.3 Windows/7 botocore/1.5.27
     - 윈도우 단축키 <font face=Wingdings>ÿ</font> + R 단축키를 누르고 나서 `cmd` 명령어를 쳤을 때 `aws --version` 명령어가 실행되려면,
     환경변수로 **경로(Path)**가 파이썬 AWS CLI 모두 추가되어야 한다.
 
-### 2.2. S3 접근 설정
+## S3 접근 설정 {#aws-scenario-01-s3}
 
 S3 버킷에 접근하기 위해서는 AWS에서 발급한 토큰이 필요하다. 
 통상 AWS Access Key와 AWS Secret Access Key 즉 접근키와 접근비번으로 구성된다.
@@ -78,7 +83,7 @@ S3 버킷에 접근하기 위해서는 AWS에서 발급한 토큰이 필요하�
 
 상기 정보를 CLI의 경우 `asw configure` 명령어를 실행하고 채워넣거나, S3 브라우저 GUI를 사용하는 경우 메뉴를 찾아 입력시키면 S3에 접속할 수 있다.
 
-### 2.3. 데이터 분석 환경
+## 데이터 분석 환경 {#aws-scenario-01-analysis}
 
 AWS S3 버킷 인증키와 S3버킷에서 데이터를 로컬 PC로 가져올 준비가 완료되면 다음으로 데이터를 분석할 환경을 갖춰야 한다.
 가장 많이 사용되는 데이터 분석 언어는 R과 파이썬이다. 물론 이 언어를 데이터 분석 엔진으로 사용을 하지만 개발환경을 갖추어 사용하는 것이 대부분이다.
@@ -93,19 +98,27 @@ R의 경우 RStudio, 파이썬의 경우 쥬피터가 데이터 분석(과학) �
 결국 클라우드 S3 저장된 데이터 `.csv`, `.json`, `.parquet` 파일을 CLI, GUI 인터페이스를 통해 로컬 컴퓨터로 가져와서 R이나 파이썬 모두
 데이터프레임 형태로 데이터를 가공하여 분석이나 모형개발 작업을 추진한다.
 
-### 2.4. 통합개발환경(IDE) 설치 
+## 통합개발환경(IDE) 설치 {#aws-scenario-01-analysis-ide}
 
 파이썬의 경우 CLI 상에서 `pip install Jupyter` 명령어를 실행하면 간단히 쥬피터가 설치된다.
 쥬피터 설치가 완료되면 `jupyter notebook` 명령어를 실행시키면 웹브라우져가 실행되고 데이터를 분석할 수 있는 준비가 모두 완료된다.
 
-> ### `Microsoft Visual C++ 10.0 is required (Unable to find vcvarsall.bat)` 오류 {.callout}
-> 
-> - `pip install Jupyter` 설치하면서 오류가 발생되면 **Visual C++ Studio 2010 Express**를 설치한다.
-> - 필요시 `c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin` 디렉토리로 이동하여 `vcvars32.bat`을 실행한다.
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+***`Microsoft Visual C++ 10.0 is required (Unable to find vcvarsall.bat)` 오류**
+ 
+- `pip install Jupyter` 설치하면서 오류가 발생되면 **Visual C++ Studio 2010 Express**를 설치한다.
+- 필요시 `c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin` 디렉토리로 이동하여 `vcvars32.bat`을 실행한다.
+</div>
+
 
 R을 데이터분석환경을 사용하는 경우 [RStudio](https://www.rstudio.com/)를 다운로드 받아 설치한다.
 
-### 2.5. S3와 통합개발환경 RStudio, 쥬피터 데이터 동기화
+## S3와 통합개발환경 RStudio, 쥬피터 데이터 동기화 {#aws-scenario-01-analysis-sync}
 
 PC에서 S3 데이터를 다운로드 받아 RStudio 혹은 아나콘다 쥬피터 노트북으로 통해 데이터를 분석하거나 알고리즘을 개발하는 경우 
 특정 디렉토리를 작업 폴더로 지정하는 것이 프로젝트로 관리 측면에서 편리성이 있다.
@@ -117,7 +130,7 @@ PC에서 S3 데이터를 다운로드 받아 RStudio 혹은 아나콘다 쥬피�
 - PC 디렉토리와 RStudio, 쥬피터 노트북 동기화: RStudio의 경우 프로젝트를 생성하여 특정 디렉토리를 동기화한다. 쥬피터 노트북의 경우 
 작업 디렉토리로 이동하여 `jupyter notebook` 실행 명령어를 사용하던가, 쥬피터 노트북 실행 아이콘을 우클릭하여 시작 경로를 설정한다.
 
-## 3. 두번째 시나리오 - EC2 분석 컴퓨터에서 데이터 분석 [^aws-filezilla] [^aws-filezilla-screenshot]
+# 시나리오: EC2 분석 컴퓨터에서 데이터 분석 [^aws-filezilla] [^aws-filezilla-screenshot]  {#aws-scenario-02}
 
 [^aws-filezilla]: [AWS - EC2 인스턴스 FileZilla(sftp)로 접속하기, Fall in IT](http://ithub.tistory.com/48)
 [^aws-filezilla-screenshot]: [Transferring Files between your laptop and Amazon instance](http://angus.readthedocs.io/en/2014/amazon/transfer-files-between-instance.html)
@@ -142,7 +155,7 @@ AWS 클라우드에 생성시킨 R과 RStudio가 설치된 분석전용 컴퓨�
 
 <img src="fig/aws-ec2-connect-screenshot.png" alt="세가지 접속방법 화면캡쳐" width="87%" />
 
-### 3.1. SSH 접속  
+## SSH 접속  {#aws-scenario-02-ssh}
 
 AWS에서 제공하는 EC2 컴퓨터는 기본적인 운영체제(리눅스)가 깔려 제공된다. 
 그외 필요한 설정은 본인이 직접 해야 된다. 마치 새로 컴퓨터를 구매한 상황이라고 보면 된다.
@@ -154,7 +167,7 @@ AWS에서 제공하는 EC2 컴퓨터는 기본적인 운영체제(리눅스)가 
 
 <img src="fig/aws-ec2-connect-ssh.png" alt="SSH 접속" width="87%" />
 
-### 3.2. sFTP 접속  
+## sFTP 접속 {#aws-scenario-02-ftp} 
 
 EC2 컴퓨터에 FTP가 설치되지 않는 경우 먼저 이를 설치해야 된다.
 
@@ -177,76 +190,97 @@ FTP 프로그램이 설치되어 로컬 컴퓨터에서 EC2 컴퓨터에 sFTP �
 
 <img src="fig/aws-ec2-connect-filezilla.png" alt="FileZilla 접속" width="77%" />
 
-> ### 루트(`root`) 계정 로그인 {.callout}
->
-> 금지된 `root` 계정 로그인을 하는 방법은 다음과 같다.
-> 
-> 1. `root` 권한으로 로그인 할 수 있도록 권한을 수정
->     - `sudo nano /etc/ssh/sshd_config` 파일을 열고, `PermitRootLogin prohibit-password` &rarr; `PermitRootLogin yes` 로 수정
-> 1. `root` 비밀번호 설정
->     - `sudo passwd` 명령어로 `ubuntu` 유저 비밀번호 설정
->     - `su root` 비밀번호를 입력하여 `root` 계정으로 바꿈 
-> 1. `authorized_keys` 파일 복사
->     - `root` 계정 `~/.ssh/authorized_keys` 파일을 `~/.ssh/authorized_keys_bak`로 이동
->         1. `su root`
->         1. `cd ~/.ssh/`
->         1. `mv authorized_keys authorized_keys_bak`
->     - `ubuntu` 계정 `/home/ubuntu/.ssh/authorized_keys` 파일 복사
->         1. `cp /home/ubuntu/.ssh/authorized_keys /home/root/.ssh/`        
->              - EC2 컴퓨터 생성시 생성한 `.pem` 파일을 그대로 사용해서 FileZilla `root` 계정으로 로그인하기 위함.
-> 1. 서비스 재시작
->     - `service sshd restart`
->     - `ubuntu` 계정 대신 `root` 계정으로 로그인 가능하게 됨.
-> 
-> ``` {r root-login, eval=FALSE}
-> $ ssh -i "vxxxxxxxxx.pem" root@ec2-1xx-xx-22-xxx.ap-northeast-2.compute.amazonaws.com
-> Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
-> 
->  * Documentation:  https://help.ubuntu.com
->  * Management:     https://landscape.canonical.com
->  * Support:        https://ubuntu.com/advantage
-> 
->   Get cloud support with Ubuntu Advantage Cloud Guest:
->     http://www.ubuntu.com/business/services/cloud
-> 
-> 0 packages can be updated.
-> 0 updates are security updates.
-> 
-> root@ip-1xx-xx-22-xxx:~#
-> ```
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+**루트(`root`) 계정 로그인**
+금지된 `root` 계정 로그인을 하는 방법은 다음과 같다.
+
+1. `root` 권한으로 로그인 할 수 있도록 권한을 수정
+    - `sudo nano /etc/ssh/sshd_config` 파일을 열고, `PermitRootLogin prohibit-password` &rarr; `PermitRootLogin yes` 로 수정
+1. `root` 비밀번호 설정
+    - `sudo passwd` 명령어로 `ubuntu` 유저 비밀번호 설정
+    - `su root` 비밀번호를 입력하여 `root` 계정으로 바꿈 
+1. `authorized_keys` 파일 복사
+    - `root` 계정 `~/.ssh/authorized_keys` 파일을 `~/.ssh/authorized_keys_bak`로 이동
+        1. `su root`
+        1. `cd ~/.ssh/`
+        1. `mv authorized_keys authorized_keys_bak`
+    - `ubuntu` 계정 `/home/ubuntu/.ssh/authorized_keys` 파일 복사
+        1. `cp /home/ubuntu/.ssh/authorized_keys /home/root/.ssh/`        
+             - EC2 컴퓨터 생성시 생성한 `.pem` 파일을 그대로 사용해서 FileZilla `root` 계정으로 로그인하기 위함.
+1. 서비스 재시작
+    - `service sshd restart`
+    - `ubuntu` 계정 대신 `root` 계정으로 로그인 가능하게 됨.
+
+``` {r root-login, eval=FALSE}
+$ ssh -i "vxxxxxxxxx.pem" root@ec2-1xx-xx-22-xxx.ap-northeast-2.compute.amazonaws.com
+Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+0 packages can be updated.
+0 updates are security updates.
+
+root@ip-1xx-xx-22-xxx:~#
+```
+
+</div>
+
 
 `rstudio` 계정에 `root` 권한을 부여할 경우 보안에는 다소 문제가 있을 수 있으나 데이터 과학 작업을 수행하는데 
 나름 편리한 점은 있다. [^ask-ubuntu-root-privileges]
 
 [^ask-ubuntu-root-privileges]: [How do I grant sudo privileges to an existing user?](https://askubuntu.com/questions/168280/how-do-i-grant-sudo-privileges-to-an-existing-user)
 
-> ### `rstudio` 계정에 루트(`root`) 권한 부여 {.callout}
->
-> `rstudio` 뿐만 아니라 특정 계정에 `root` 권한을 부여하는 명령어는 다음과 같다. 
-> 
-> ``` {r permit-root-privileges, eval=FALSE}
-> 
-> root@ip-172-31-22-122:~$ sudo usermod -a -G sudo rstudio
-> ```
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
 
-> ### `rstudio` 권한 아래 디렉토리 관리 {.callout}
->
-> `root`, `ubuntu`, `rstudio` 등 여러 계정이 혼재된 경우 `rstudio` 계정으로 디렉토리 관리를 일원화 하고자 하는 경우 다음 
-> 명령어를 사용한다. `/home/rstudio/network_data/` 디렉토리를 `rstudio` 관할로 변경시킴.
-> 
-> ``` {r change-directory-ownership, eval=FALSE}
-> 
-> root@ip-172-31-22-122:~$ sudo chown -R rstudio ./network_data/
-> ```
+**`rstudio` 계정에 루트(`root`) 권한 부여**
+`rstudio` 뿐만 아니라 특정 계정에 `root` 권한을 부여하는 명령어는 다음과 같다. 
+
+``` {r permit-root-privileges, eval=FALSE}
+
+root@ip-172-31-22-122:~$ sudo usermod -a -G sudo rstudio
+```
+
+</div>
 
 
-### 3.3. RStudio 8787 접속 {#rstudio-connect}
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+**`rstudio` 권한 아래 디렉토리 관리**
+
+`root`, `ubuntu`, `rstudio` 등 여러 계정이 혼재된 경우 `rstudio` 계정으로 디렉토리 관리를 일원화 하고자 하는 경우 다음 
+명령어를 사용한다. `/home/rstudio/network_data/` 디렉토리를 `rstudio` 관할로 변경시킴.
+
+``` {r change-directory-ownership, eval=FALSE}
+
+root@ip-172-31-22-122:~$ sudo chown -R rstudio ./network_data/
+```
+
+</div>
+
+
+## RStudio 8787 접속 {#rstudio-connect}
 
 데이터분석 환경과 데이터를 모두 전달했다면 EC2 컴퓨터에서 데이터분석을 위한 모든 준비가 되었다.
 EC2 컴퓨터 IP주소 입력를 포트번호 `8787`을 붙여 접속하게 되면 친숙한 RStudio 개발환경이 나타난다.
 로그인을 해야 되기 때문에 rstudio/rstudio 계정으로 로그인하면 된다.
 
-## 4. 세번째 시나리오 - AWS 클라우드의 저장소 기능(S3)과 연산기능(EC2) 모두 활용 {#ec2-s3-s3fs-fuse}
+# 시나리오: AWS 클라우드의 저장소 기능(S3)과 연산기능(EC2) 모두 활용 {#ec2-s3-s3fs-fuse}
 
 세번째 시나리오는 데이터도 보안이나 용량문제 등 다양한 사유로 S3에 저장되어 있고,
 로컬 컴퓨터나 노트북으로 데이터 분석 작업을 진행하기 곤란한 경우 AWS 클라우드 연산기능(EC2)을 활용하여 
