@@ -14,38 +14,36 @@ title: 빅데이터
 
 ## 학습목차 
 
-- [빅메모리(bigmemory)](bigdata-bigmemeory.html): "빅데이터는 디스크에 쓰고 R 메모리라고 읽는다"
-- **[기계학습 클라우드(AWS) 개발배포 환경](ml-aws-spark.html)**
-    1. [시나리오별 클라우드(AWS) 컴퓨팅 자원을 데이터 과학에 활용](ml-aws-from-pc.html)
-    1. [AWS 우분투 EC2 + S3 버킷 + RStudio 서버](ds-aws-rstudio-server.html)
-    1. [단독형 스파크 설치 - PC/노트북, EC2 원격 컴퓨터](ds-sparklyr.html) 
-    1. [스파크 EC2 클러스터 - 부싯돌(flintrock)](ml-aws-ec2-flintrock.html)
-        1. [스파크 EC2 클러스터 - 데이터과학 툴체인(R, sparklyr)](ml-aws-ec2-flintrock-sparklyr.html)
-    1. [EMR 스파크 클러스터 - wadal](ml-emr-wadal.html)
-    1. [분석할 데이터를 스파크에 적재하는 방법 - S3 포함](ml-ec2-s3.html)
-    1. ["Spark와 연결하는 `sparklyr`, `dplyr`, 그리고 기계학습"](ml-sparklyr.html)
-- **웹 크롤링(Crawling)**
-    1. [데이터 크롤링 &rarr; S3](ml-crawling-s3.html)
-    1. [데이터 크롤링: EC2 &rarr; S3](ml-crawling-ec2-s3.html)
-- **[스파크(Spark)](http://statkclee.github.io/parallel-r/spark-mooc.html)**
-    * [SparkR 하둡 클러스터 설치](ds-spark-hadoop-install.html)
-    * [$H_2 O$ 하둡 스파크 클러스터 설치](ds-h2o-spark-hadoop.html)
-1. **빅데이터**
-    - [빅데이터 하드웨어, 맵리듀스, 스파크](big-data-hw.html)    
-    - [스파크 이해하기](spark-mooc.html)
-    - **SparkR 설치**
-        - [SparkR 설치](spark-hadoop-install.html)
-        - [SparkR 헬로 월드](sparkr-hello-world.html)
-        - [SparkR 도커](sparkr-docker.html)
-        - [우분투 SparkR 설치](sparkr-ubuntu.html)
-    - [SparkR 들어가며](sparkr-intro.html)
-1. [$H_2 O$ 기계학습](h20-arch.html)
+
+
+- [기계학습 클라우드(AWS) 개발배포 환경](ml-aws-spark.html)
+    + [시나리오별 클라우드(AWS) 컴퓨팅 자원을 데이터 과학에 활용](ml-aws-from-pc.html)
+    + [AWS 우분투 EC2 + S3 버킷 + RStudio 서버](ds-aws-rstudio-server.html)
+    + [단독형 스파크 설치 - PC/노트북, EC2 원격 컴퓨터](ds-sparklyr.html) 
+    + [스파크 EC2 클러스터 - 부싯돌(flintrock)](ml-aws-ec2-flintrock.html)
+        - [스파크 EC2 클러스터 - 데이터과학 툴체인(R, sparklyr)](ml-aws-ec2-flintrock-sparklyr.html)
+    + [분석할 데이터를 스파크에 적재하는 방법 - S3 포함](ml-ec2-s3.html)    
+- [스파크(Spark)](http://statkclee.github.io/parallel-r/spark-mooc.html)
+    + [빅데이터 하드웨어, 맵리듀스, 스파크](big-data-hw.html)    
+    + [SparkR 하둡 클러스터 설치](ds-spark-hadoop-install.html)
+    + [$H_2 O$ 하둡 스파크 클러스터 설치](ds-h2o-spark-hadoop.html)    
+    + ["Spark와 연결하는 `sparklyr`, `dplyr`, 그리고 기계학습"](ml-sparklyr.html)
+- [$H_2 O$ 기계학습](h20-arch.html)
     - [$H_2 O$ R 연습문제](h2o-r-exercise.html)
     - [$H_2 O$ 헬로 월드](h2o-hello-world.html)
     - [$H_2 O$ 앙상블 모형](h2o-ensemble-higgs.html)
     - [$H_2 O$ GBM 모형 세부조정](h2o-gbm-titanic.html)
     - [$H_2 O$ vs 딥러닝 랜딩클럽 대출 데이터](h2o-deep-learning-landingclub.html)
-
+- 참고
+    - [빅메모리(bigmemory)](bigdata-bigmemeory.html): "빅데이터는 디스크에 쓰고 R 메모리라고 읽는다"
+    - [SparkR 들어가며](sparkr-intro.html)
+        - [SparkR 설치](spark-hadoop-install.html)
+        - [SparkR 헬로 월드](sparkr-hello-world.html)
+        - [SparkR 도커](sparkr-docker.html)
+        - [우분투 SparkR 설치](sparkr-ubuntu.html)
+    - [EMR 스파크 클러스터 - wadal](ml-emr-wadal.html)
+    - 웹 크롤링(Crawling): [데이터 크롤링 &rarr; S3](ml-crawling-s3.html)
+    - 웹 크롤링(Crawling): [데이터 크롤링: EC2 &rarr; S3](ml-crawling-ec2-s3.html)
 
 ### [xwMOOC 오픈 교재](https://statkclee.github.io/xwMOOC/)
 
