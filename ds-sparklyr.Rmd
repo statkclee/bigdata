@@ -29,7 +29,7 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
 
 # 로컬 컴퓨터 스파크 설치 {#install-spark}
 
-## `sparklyr` 설치 (윈도우) [^sparklyr-windows] {#install-spark-windows}
+# `sparklyr` 설치 (윈도우) [^sparklyr-windows] {#install-spark-windows}
 
 [^sparklyr-windows]: [Running Apache Spark with sparklyr and R in Windows](http://yokekeong.com/running-apache-spark-with-sparklyr-and-r-in-windows/)
 
@@ -48,49 +48,177 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
 </div>
 
 
-1. [Download Apache Spark](http://spark.apache.org/downloads.html) 사이트를 방문하여 스파크-하둡을 다운로드 한다.
-    * 스파크 버젼 1.6.2. : `spark-1.6.2-bin-hadoop2.6.tgz` 버전을 다운로드 받아 설치한다.
-    * 스파크 버젼 2.0.0. : `spark-2.0.0-bin-hadoop2.7.tgz` 버전은 설치가 안되는 경우가 있다.
-1. 다운로드 받은 파일의 압축을 풀게 되면 `spark-1.6.2-bin-hadoop2.6` 디렉토리가 생성된다.
-    * 작업하기 편한 장소로 압축 푼 스파크-하둡 디렉토리를 이동시킨다. 예를 들어, `C:/spark-1.6.2-bin-hadoop2.6`
+1. [Download Apache Spark](http://spark.apache.org/downloads.html) 사이트를 방문하여 스파크-하둡을 다운로드 한다. 너무 오래된 버전, 가장 최근 버전은 설치과정에 문제가 있을 수 있으니 현재 시점기준("2019-01-01") 약 1년전 버전을 설치한다. `spark-2.3.0-bin-hadoop2.7.tgz`은 하둡 2.7 버전에 스파크 2.3.0 버전을 설치한다는 의미가 된다.
+    - 스파크 버젼 2.4.0. : `spark-2.4.0-bin-hadoop2.7.tgz` 버전은 다운로드 받아 설치한다.     
+    - **스파크 버젼 2.3.0.** : `spark-2.3.0-bin-hadoop2.7.tgz` 버전은 다운로드 받아 설치한다.
+    - 스파크 버젼 1.6.3. : `spark-1.6.3-bin-hadoop2.6.tgz` 버전을 다운로드 받아 설치한다.
+1. 다운로드 받은 파일의 압축을 풀게 되면 `spark-2.3.0-bin-hadoop2.7.tgz` 디렉토리가 생성된다.
+    * 작업하기 편한 장소로 압축 푼 스파크-하둡 디렉토리를 이동시킨다. 예를 들어, `C:/spark-2.3.0-bin-hadoop2.7`
 1. RStudio에서 `sparklyr` 팩키지를 설치한다.
 
+## 자바 설치 [^install-java] {#install-spark-windows-java}
 
-```{r windows-install, eval=FALSE}
+[^install-java]: [Spark 2: How to install it on Windows in 5 steps](https://medium.com/@dvainrub/how-to-install-apache-spark-2-x-in-your-pc-e2047246ffc3)
+
+스파크를 설치하기 위해서 먼저 자바 버전 7+ 이상이 필요하다. 만약 자바가 설치되지 않는 경우 
+[자바](https://www.java.com/ko/) 다운로드를 선행하여 진행한다.
+
+```{r spark-windows-java, eval=FALSE}
+C:\spark-2.3.0-bin-hadoop2.7>java -version
+java version "1.8.0_171"
+Java(TM) SE Runtime Environment (build 1.8.0_171-b11)
+Java HotSpot(TM) 64-Bit Server VM (build 25.171-b11, mixed mode)
+```
+
+## 스파크 헬로월드 {#install-spark-windows-hello-world}
+
+[Download Apache Spark](http://spark.apache.org/downloads.html) 사이트에서 다운로드 받아 압축을 풀게되면 
+`C:/spark-2.3.0-bin-hadoop2.7` 스파크 설치는 하둡과 함께 완료되었다.
+
+"제어판 &rarr; 모든 제어판 항목 &rarr; 시스템"에서 "고급 시스템 설정"을 선택하여 "시스템 속성"의 "고급" 탭에서 "환경변수"를 설정한다.
+
+```{r spark-env, eval=FALSE}
+SPARK_HOME = C:\spark-2.3.0-bin-hadoop2.7
+HADOOP_HOME = C:\spark-2.3.0-bin-hadoop2.7
+PATH += C:\spark-2.3.0-bin-hadoop2.7\bin
+```
+
+다음으로 `winutils.exe` 파일을 [Windows binaries for Hadoop versions](https://github.com/steveloughran/winutils)을 하둡 버젼에 맞춰 다운로드하여 설치한다.
+(복사하여 붙여넣기)
+
+예를 들어, 하둡 2.7버젼이 "C:\spark-2.3.0-bin-hadoop2.7" 디렉토리에 설치되어 있기 때문에 [https://github.com/steveloughran/winutils/blob/master/hadoop-2.7.1/bin/winutils.exe](https://github.com/steveloughran/winutils/blob/master/hadoop-2.7.1/bin/winutils.exe) 파일을 "C:\spark-2.3.0-bin-hadoop2.7\bin" 디렉토리에 복사하여 붙여넣으면 된다.
+
+스파크 설정 후에 발생되는 버그를 미연에 방지하기 위해서 다음 작업수행한다.
+
+1. `c:\tmp\hive` 디렉토리 생성
+1. 다운로드 받은 `winutils.exe` 프로그램 실행:  `winutils.exe chmod -R 777 c:\tmp\hive`
+1. 권한확인: `winutils.exe ls -F c:\tmp\hive`
+
+### 언어 설치 - 스칼라 {#install-spark-windows-hello-world-language-scala}
+
+가장 먼저 스파크 헬로월드를 보내보자. 이를 위해서 스파크와 의사소통할 수 있는 언어가 필요하다.
+스칼라를 스파크 데이터 분석 및 모형개발의 주언어로 설정하고자 할 경우 [스칼라 다운로드](https://www.scala-lang.org/download/) 사이트에서 윈도우 버젼을 다운로드받아 설치한다.
+
+- [Other ways to install Scala: Download the Scala binaries for windows ](https://downloads.lightbend.com/scala/2.12.8/scala-2.12.8.msi)
+
+`C:\Program Files (x86)\scala` 디렉토리에서 스칼라 버젼을 확인해보자.
+
+```{r scala-install, eval=FALSE}
+C:\Program Files (x86)\scala>scala -version
+Scala code runner version 2.12.8 -- Copyright 2002-2018, LAMP/EPFL and Lightbend
+, Inc.
+```
+
+### 스파크 쉘(spark-shell) {#install-spark-windows-hello-world-spark-shell}
+
+`C:\Program Files (x86)\scala\doc` 디렉토리에 가면 `README` 파일이 있다.
+이문서를 불러와서 단어갯수와 첫 행을 출력하는 코드를 작성한다.
+우선 `spark-shell`을 실행시켜 스파크 클러스터를 생성시킨다.
+그리고나서 `sc.textFile()` 함수로 `README` 파일을 불러읽어온다.
+그리고 나서 `textFile.count()`, `textFile.first()` 함수로 단어갯수와 문서 첫줄을 화면에 찍어본다.
+
+[Spark Quick Start](https://spark.apache.org/docs/1.2.1/quick-start.html)에서 자세한 사항을 확인한다.
+
+``` {r spark-shell-hello-world-spark-shell, eval=FALSE}
+C:\Program Files (x86)\scala\doc>ls
+LICENSE.md  License.rtf  README  licenses  tools
+
+C:\Program Files (x86)\scala\doc>spark-shell
+2019-01-03 14:39:55 WARN  NativeCodeLoader:62 - Unable to load native-hadoop li
+rary for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLev
+l(newLevel).
+Spark context Web UI available at http://victorlee-PC1.webzen.co.kr:4040
+Spark context available as 'sc' (master = local[*], app id = local-154649400135
+).
+Spark session available as 'spark'.
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  `_/
+   /___/ .__/\_,_/_/ /_/\_\   version 2.3.0
+      /_/
+
+Using Scala version 2.11.8 (Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_171)
+Type in expressions to have them evaluated.
+Type :help for more information.
+
+scala> val textFile = sc.textFile("README")
+textFile: org.apache.spark.rdd.RDD[String] = README MapPartitionsRDD[3] at text
+ile at <console>:24
+
+scala> textFile.count()
+res1: Long = 36
+
+scala> textFile.first()
+res2: String = Scala Distribution
+```
+
+### 언어 - 파이썬 {#install-spark-windows-hello-world-language-python}
+
+파이썬을 설치하고 하나서 `pyspark`를 사용해서도 스파크를 사용하는 것이 가능하다.
+
+``` {r spark-shell-hello-world-python, eval=FALSE}
+C:\Program Files (x86)\scala\doc>pyspark
+Python 3.6.4 |Anaconda, Inc.| (default, Jan 16 2018, 10:22:32) [MSC v.1900 64 bi
+t (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+2019-01-03 14:46:53 WARN  NativeCodeLoader:62 - Unable to load native-hadoop lib
+rary for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLeve
+l(newLevel).
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  `_/
+   /__ / .__/\_,_/_/ /_/\_\   version 2.3.0
+      /_/
+
+Using Python version 3.6.4 (default, Jan 16 2018 10:22:32)
+SparkSession available as 'spark'.
+>>> nums = sc.parallelize([1,2,3,4])
+>>> nums.map(lambda x: x*x).collect()
+[Stage 0:>                                                          (0 + 4) / 4]
+
+[1, 4, 9, 16]
+>>>
+```
+
+### 언어 - R {#install-spark-windows-hello-world-language-R}
+
+`spark_available_versions()` 함수를 사용해서 R에서 설치하는 방법도 있기는 하지만, 
+추후 있을 수 있는 디버깅을 고려하여 스파크를 설치하고 환경설정을 마친 후에 `sparklyr` 팩키지를 통해서 R언어로 
+빅데이터 분석 및 모형개발 작업을 수행하는 것이 좋은 경우도 많다.
+
+```{r windows-install, eval=TRUE}
+library(sparklyr)
 # 0. 설정환경 확인
 ## JAVA 설정
 Sys.getenv("JAVA_HOME")
 ## HADOOP 설정
 Sys.getenv("HADOOP_HOME")
-Sys.setenv(HADOOP_HOME = "C:/Users/<사용자명>/AppData/Local/rstudio/spark/Cache/spark-2.1.0-bin-hadoop2.7")
 ## SPARK 설정
 Sys.getenv("SPARK_HOME")
 spark_home_dir()
 
 ## 설치된 SPARK 버젼확인 설정
 spark_installed_versions()
-# spark hadoop                       dir
-# 1 2.1.0    2.7 spark-2.1.0-bin-hadoop2.7
 
 # 1. sparklyr 설치
-devtools::install_github("rstudio/sparklyr")
-library(sparklyr)
+# devtools::install_github("rstudio/sparklyr")
 
 # 2. 스파크 클러스터 로컬에 설치 
 # 가능한 설정 확인
-spark_available_versions()
+# spark_available_versions()
 sc <- spark_connect(master="local")
 
 # 3. iris 데이터셋 작업 준비 완료
 library(dplyr)
 iris_tbl <- copy_to(sc, iris)
-# The following columns have been renamed:
-# - "Sepal.Length" => "Sepal_Length" (#1)
-# - "Sepal.Width"  => "Sepal_Width"  (#2)
-# - "Petal.Length" => "Petal_Length" (#3)
-# - "Petal.Width"  => "Petal_Width"  (#4)
+
 src_tbls(sc)
-# [1] "iris"
 ```
 
 ## `sparklyr` 설치 유닉스 계열 [^sparklyr] [^install-jdk-on-mac-osx] {#install-spark-unix}
