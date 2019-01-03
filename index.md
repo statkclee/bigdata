@@ -23,7 +23,7 @@ title: 빅데이터
     + [스파크 EC2 클러스터 - 부싯돌(flintrock)](ml-aws-ec2-flintrock.html)
         - [스파크 EC2 클러스터 - 데이터과학 툴체인(R, sparklyr)](ml-aws-ec2-flintrock-sparklyr.html)
     + [분석할 데이터를 스파크에 적재하는 방법 - S3 포함](ml-ec2-s3.html)    
-- [스파크(Spark)](http://statkclee.github.io/parallel-r/spark-mooc.html)
+- [스파크(Spark)](spark-mooc.html)
     + [빅데이터 하드웨어, 맵리듀스, 스파크](big-data-hw.html)    
     + [SparkR 하둡 클러스터 설치](ds-spark-hadoop-install.html)
     + [$H_2 O$ 하둡 스파크 클러스터 설치](ds-h2o-spark-hadoop.html)    
