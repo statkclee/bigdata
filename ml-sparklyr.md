@@ -1,19 +1,27 @@
 ---
 layout: page
-title: xwMOOC 기계학습
-subtitle: dplyr을 Spark 위에 올린 sparklyr
+title: 빅데이터
+subtitle: "sparklyr, dplyr, 그리고 기계학습"
+author:
+    name: xwMOOC
+    url: https://www.facebook.com/groups/tidyverse/
+    affiliation: Tidyverse Korea
+date: "2019-01-03"
 output:
   html_document: 
     toc: yes
-    keep_md: yes
-  pdf_document:
-    latex_engine: xelatex
-mainfont: NanumGothic
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
 ---
  
 
 
-## 1. R과 스파크 [^datacamp-sparklyr]
+# R과 스파크 [^datacamp-sparklyr] {#r-sparklyr}
 
 R은 데이터분석 코드를 빠르고 가독성 좋게 작성하기 좋은 언어다.
 마찬가지로 아파치 스파크(Apache Spark)은 엄청 큰 빅데이터를 빠르게 분석하기 좋도록 설계되었다.
@@ -30,7 +38,7 @@ R이 데이터분석에 최적화되어 있어 시각화나 데이터를 다루�
 
 <img src="fig/sparklyr-datacamp.png" alt="스파크 R 그리고 sparklyr" width="77%" />
 
-## 2. 스파크 헬로우 월드
+# 스파크 헬로우 월드 {#r-sparklyr-hello}
 
 R에서 로컬 컴퓨터에 스파크를 설치하고 이를 운영하는 것은 간단하다.
 `spark_install()` 명령어로 설치하고 나서 `spark_connect()`를 통해 로컬 컴퓨터에 구축된
@@ -39,10 +47,9 @@ R에서 로컬 컴퓨터에 스파크를 설치하고 이를 운영하는 것은
 
 
 ~~~{.r}
-# 1. 설치
-install.packages("sparklyr")
+# 1. 라이브러리
 library(sparklyr)
-spark_install()
+library(tidyverse)
 
 # 2. 스파크 클러스터 연결
 sc <-spark_connect(master="local")
@@ -54,17 +61,24 @@ spark_version(sc=sc)
 spark_disconnect(sc=sc)
 ~~~
 
-## 3. `csv` 파일 불러오기
+# `csv` 파일 불러오기 {#r-sparklyr-csv}
 
 스파크 클러스터가 완료되면 가장 먼저 해야 할 일은 스파크 클러스터에서 분석할 데이터를 불러오는 것이다.
 `.csv` 파일을 R로 `read_csv()` 함수로 불러오는 것과 마찬가지로 `spark_read_csv()` 함수를 통해 직접 불러오거나,
 이미 데이터프레임으로 R에서 분석가능한 형태로 존재하게 되면 `copy_to()` 명령어를 통해 스파크에 전달한다.
 
-> ### 주의할 점 {.callout}
->
-> `copy_to()` 명령어는 기본적으로 **복사(copy)** 작업으로 느린 특성이 있다.
-> 따라서 이런 작업은 가능하면 회피하고 다른 최적의 전략을 탐색한다.
-> `copy_to()`에 대응되는 `collect()` 작업도 마찬가지로 특별한 경우나 당위성이 없다면 다른 최적화 방법을 탐색한다.
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+**주의할 점**
+
+`copy_to()` 명령어는 기본적으로 **복사(copy)** 작업으로 느린 특성이 있다.
+따라서 이런 작업은 가능하면 회피하고 다른 최적의 전략을 탐색한다.
+`copy_to()`에 대응되는 `collect()` 작업도 마찬가지로 특별한 경우나 당위성이 없다면 다른 최적화 방법을 탐색한다.
+</div>
+
 
 `iris` 데이터프레임을 스파크 클러스터로 전달하는 명령어는 `copy_to(sc, iris)`으로 스파크 클러스트(sc)에 `iris`를 복사해 보낸다.
 `src_tbls`
@@ -85,30 +99,50 @@ $ Sepal.Length <dbl> 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9,...
 $ Sepal.Width  <dbl> 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1,...
 $ Petal.Length <dbl> 1.4, 1.4, 1.3, 1.5, 1.4, 1.7, 1.4, 1.5, 1.4, 1.5,...
 $ Petal.Width  <dbl> 0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.3, 0.2, 0.2, 0.1,...
-$ Species      <fctr> setosa, setosa, setosa, setosa, setosa, setosa, ...
+$ Species      <fct> setosa, setosa, setosa, setosa, setosa, setosa, s...
 
 ~~~
 
 
 
 ~~~{.r}
-# Sys.setenv(SPARK_HOME="C:/spark-1.6.2-bin-hadoop2.6")
-
 sc <-spark_connect(master="local")
+~~~
 
+
+
+~~~{.output}
+Error in spark_version_from_home(spark_home, default = spark_version): Failed to detect version from SPARK_HOME or SPARK_HOME_VERSION. Try passing the spark version explicitly.
+
+~~~
+
+
+
+~~~{.r}
 iris_tbl <- copy_to(sc, iris)
+~~~
 
+
+
+~~~{.output}
+Error in copy_to(sc, iris): 객체 'sc'를 찾을 수 없습니다
+
+~~~
+
+
+
+~~~{.r}
 src_tbls(sc)
 ~~~
 
 
 
 ~~~{.output}
-[1] "iris"
+Error in src_tbls(sc): 객체 'sc'를 찾을 수 없습니다
 
 ~~~
 
-### 3.1. 빅데이터와 `tibble()` 자료구조
+## 빅데이터와 `tibble()` 자료구조 {#r-sparklyr-tibble}
 
 `copy_to()` 명령어를 통해 반환되는 객체는 `tibble()`이다. 티블은 data.frame 객체를 내부에 갖고 있을 수도 있고,
 원격 객체 (데이터베이스 등)를 갖을 수 있고 다양한 출력명령어를 지원한다.
@@ -120,14 +154,25 @@ src_tbls(sc)
 ~~~{.r}
 # iris_tbl 티블 객체에 `iris` 스파크 데이터프레임을 `tbl()` 명령어로 연결
 iris_tbl <- tbl(sc, "iris")
+~~~
 
+
+
+~~~{.output}
+Error in tbl(sc, "iris"): 객체 'sc'를 찾을 수 없습니다
+
+~~~
+
+
+
+~~~{.r}
 dim(iris_tbl)
 ~~~
 
 
 
 ~~~{.output}
-[1] 150   5
+Error in eval(expr, envir, enclos): 객체 'iris_tbl'를 찾을 수 없습니다
 
 ~~~
 
@@ -140,7 +185,7 @@ pryr::object_size(iris_tbl)
 
 
 ~~~{.output}
-9.89 kB
+Error in object_sizes(list(...), env): 객체 'iris_tbl'를 찾을 수 없습니다
 
 ~~~
 
@@ -154,19 +199,7 @@ print(iris_tbl, n=6, width = Inf)
 
 
 ~~~{.output}
-Source:   query [150 x 5]
-Database: spark connection master=local[8] app=sparklyr local=TRUE
-
-# A tibble: 150 x 5
-  Sepal_Length Sepal_Width Petal_Length Petal_Width Species
-         <dbl>       <dbl>        <dbl>       <dbl>   <chr>
-1          5.1         3.5          1.4         0.2  setosa
-2          4.9         3.0          1.4         0.2  setosa
-3          4.7         3.2          1.3         0.2  setosa
-4          4.6         3.1          1.5         0.2  setosa
-5          5.0         3.6          1.4         0.2  setosa
-6          5.4         3.9          1.7         0.4  setosa
-# ... with 144 more rows
+Error in print(iris_tbl, n = 6, width = Inf): 객체 'iris_tbl'를 찾을 수 없습니다
 
 ~~~
 
@@ -180,25 +213,16 @@ glimpse(iris_tbl)
 
 
 ~~~{.output}
-Observations: 150
-Variables: 5
-
-~~~
-
-
-
-~~~{.output}
-Error in if (width[i] <= max_width[i]) next: TRUE/FALSE가 필요한 곳에 값이 없습니다
+Error in glimpse(iris_tbl): 객체 'iris_tbl'를 찾을 수 없습니다
 
 ~~~
 
 `pryr::object_size` 명령어를 통해 크기를 확인할 수 있다.
 
 
-## 4. `dplyr` 데이터 처리
+# `dplyr` 데이터 처리 {#r-sparklyr-tibble-dplyr}
 
-
-### 4.1. `dplyr` 기본 
+## `dplyr` 기본 {#r-sparklyr-tibble-dplyr-basis}
 
 스파크 데이터프레임을 `sparklyr` 팩키지를 통해 `tibble()` 자료형으로 연결시키고 나면 `dplyr` 명령어를 다수 활용할 수 있다.
 가장 기본적인 `dplyr` 명령어는 다음과 같다.
@@ -218,23 +242,7 @@ copy_to(sc, iris, overwrite = TRUE)
 
 
 ~~~{.output}
-Source:   query [150 x 5]
-Database: spark connection master=local[8] app=sparklyr local=TRUE
-
-# A tibble: 150 x 5
-   Sepal_Length Sepal_Width Petal_Length Petal_Width Species
-          <dbl>       <dbl>        <dbl>       <dbl>   <chr>
- 1          5.1         3.5          1.4         0.2  setosa
- 2          4.9         3.0          1.4         0.2  setosa
- 3          4.7         3.2          1.3         0.2  setosa
- 4          4.6         3.1          1.5         0.2  setosa
- 5          5.0         3.6          1.4         0.2  setosa
- 6          5.4         3.9          1.7         0.4  setosa
- 7          4.6         3.4          1.4         0.3  setosa
- 8          5.0         3.4          1.5         0.2  setosa
- 9          4.4         2.9          1.4         0.2  setosa
-10          4.9         3.1          1.5         0.1  setosa
-# ... with 140 more rows
+Error in copy_to(sc, iris, overwrite = TRUE): 객체 'sc'를 찾을 수 없습니다
 
 ~~~
 
@@ -242,21 +250,25 @@ Database: spark connection master=local[8] app=sparklyr local=TRUE
 
 ~~~{.r}
 iris_sdf_tbl <- tbl(sc, "iris")
+~~~
+
+
+
+~~~{.output}
+Error in tbl(sc, "iris"): 객체 'sc'를 찾을 수 없습니다
+
+~~~
+
+
+
+~~~{.r}
 glimpse(iris_sdf_tbl)
 ~~~
 
 
 
 ~~~{.output}
-Observations: 150
-Variables: 5
-
-~~~
-
-
-
-~~~{.output}
-Error in if (width[i] <= max_width[i]) next: TRUE/FALSE가 필요한 곳에 값이 없습니다
+Error in glimpse(iris_sdf_tbl): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
 
 ~~~
 
@@ -271,23 +283,7 @@ iris_sdf_tbl %>% dplyr::select(Sepal_Length, Petal_Length, Species)
 
 
 ~~~{.output}
-Source:   query [150 x 3]
-Database: spark connection master=local[8] app=sparklyr local=TRUE
-
-# A tibble: 150 x 3
-   Sepal_Length Petal_Length Species
-          <dbl>        <dbl>   <chr>
- 1          5.1          1.4  setosa
- 2          4.9          1.4  setosa
- 3          4.7          1.3  setosa
- 4          4.6          1.5  setosa
- 5          5.0          1.4  setosa
- 6          5.4          1.7  setosa
- 7          4.6          1.4  setosa
- 8          5.0          1.5  setosa
- 9          4.4          1.4  setosa
-10          4.9          1.5  setosa
-# ... with 140 more rows
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
 
 ~~~
 
@@ -302,23 +298,7 @@ iris_sdf_tbl %>% dplyr::select(Sepal_Length, Petal_Length, Species) %>%
 
 
 ~~~{.output}
-Source:   query [42 x 3]
-Database: spark connection master=local[8] app=sparklyr local=TRUE
-
-# A tibble: 42 x 3
-   Sepal_Length Petal_Length    Species
-          <dbl>        <dbl>      <chr>
- 1          6.0          5.1 versicolor
- 2          6.3          6.0  virginica
- 3          5.8          5.1  virginica
- 4          7.1          5.9  virginica
- 5          6.3          5.6  virginica
- 6          6.5          5.8  virginica
- 7          7.6          6.6  virginica
- 8          7.3          6.3  virginica
- 9          6.7          5.8  virginica
-10          7.2          6.1  virginica
-# ... with 32 more rows
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
 
 ~~~
 
@@ -334,23 +314,7 @@ iris_sdf_tbl %>% dplyr::select(Sepal_Length, Petal_Length, Species) %>%
 
 
 ~~~{.output}
-Source:   query [42 x 3]
-Database: spark connection master=local[8] app=sparklyr local=TRUE
-
-# A tibble: 42 x 3
-   Sepal_Length Petal_Length    Species
-          <dbl>        <dbl>      <chr>
- 1          6.0          5.1 versicolor
- 2          7.7          6.9  virginica
- 3          7.7          6.7  virginica
- 4          7.7          6.7  virginica
- 5          7.6          6.6  virginica
- 6          7.9          6.4  virginica
- 7          7.3          6.3  virginica
- 8          7.2          6.1  virginica
- 9          7.4          6.1  virginica
-10          7.7          6.1  virginica
-# ... with 32 more rows
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
 
 ~~~
 
@@ -367,23 +331,7 @@ iris_sdf_tbl %>% dplyr::select(Sepal_Length, Petal_Length, Species) %>%
 
 
 ~~~{.output}
-Source:   query [42 x 4]
-Database: spark connection master=local[8] app=sparklyr local=TRUE
-
-# A tibble: 42 x 4
-   Sepal_Length Petal_Length    Species log_Sepal_Length
-          <dbl>        <dbl>      <chr>            <dbl>
- 1          6.0          5.1 versicolor        0.5581106
- 2          7.7          6.9  virginica        0.4899030
- 3          7.7          6.7  virginica        0.4899030
- 4          7.7          6.7  virginica        0.4899030
- 5          7.6          6.6  virginica        0.4930606
- 6          7.9          6.4  virginica        0.4838251
- 7          7.3          6.3  virginica        0.5030499
- 8          7.2          6.1  virginica        0.5065648
- 9          7.4          6.1  virginica        0.4996303
-10          7.7          6.1  virginica        0.4899030
-# ... with 32 more rows
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
 
 ~~~
 
@@ -402,17 +350,11 @@ iris_sdf_tbl %>% dplyr::select(Sepal_Length, Petal_Length, Species) %>%
 
 
 ~~~{.output}
-Source:   query [1 x 2]
-Database: spark connection master=local[8] app=sparklyr local=TRUE
-
-# A tibble: 1 x 2
-  mean_sepal_length max_petal_legnth
-              <dbl>            <dbl>
-1          6.721429              6.9
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
 
 ~~~
 
-### 4.2. `dplyr` 고급 기능
+## `dplyr` 고급 기능 {#r-sparklyr-tibble-advanced}
 
 변수를 선택할 때 `starts_with`, `ends_with`, `contain` 등을 활용할 수 있고,
 `distinct`도 변수내 포함된 범주를 식별할 때 도움이 많이 된다.
@@ -436,23 +378,7 @@ iris_sdf_tbl %>% dplyr::select(starts_with("Sepal"), Species)
 
 
 ~~~{.output}
-Source:   query [150 x 3]
-Database: spark connection master=local[8] app=sparklyr local=TRUE
-
-# A tibble: 150 x 3
-   Sepal_Length Sepal_Width Species
-          <dbl>       <dbl>   <chr>
- 1          5.1         3.5  setosa
- 2          4.9         3.0  setosa
- 3          4.7         3.2  setosa
- 4          4.6         3.1  setosa
- 5          5.0         3.6  setosa
- 6          5.4         3.9  setosa
- 7          4.6         3.4  setosa
- 8          5.0         3.4  setosa
- 9          4.4         2.9  setosa
-10          4.9         3.1  setosa
-# ... with 140 more rows
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
 
 ~~~
 
@@ -466,15 +392,7 @@ iris_sdf_tbl %>% distinct(Species)
 
 
 ~~~{.output}
-Source:   query [3 x 1]
-Database: spark connection master=local[8] app=sparklyr local=TRUE
-
-# A tibble: 3 x 1
-     Species
-       <chr>
-1  virginica
-2 versicolor
-3     setosa
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
 
 ~~~
 
@@ -485,6 +403,18 @@ Database: spark connection master=local[8] app=sparklyr local=TRUE
 iris_sdf_tbl %>% dplyr::count(Species, sort=TRUE) %>% 
   dplyr::top_n(3) %>% 
   explain() #버그 https://github.com/rstudio/sparklyr/issues/645
+~~~
+
+
+
+~~~{.output}
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
+
+~~~
+
+
+
+~~~{.r}
 ## 3.4. group_by
 iris_sdf_tbl %>% dplyr::select(Sepal_Length, Petal_Length, Species) %>% 
   dplyr::filter(Sepal_Length > 1.0, Petal_Length > 1.5) %>% 
@@ -498,15 +428,7 @@ iris_sdf_tbl %>% dplyr::select(Sepal_Length, Petal_Length, Species) %>%
 
 
 ~~~{.output}
-Source:   query [3 x 3]
-Database: spark connection master=local[8] app=sparklyr local=TRUE
-
-# A tibble: 3 x 3
-     Species mean_sepal_length max_petal_legnth
-       <chr>             <dbl>            <dbl>
-1     setosa          5.069231              1.9
-2 versicolor          5.936000              5.1
-3  virginica          6.588000              6.9
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
 
 ~~~
 
@@ -522,7 +444,18 @@ iris_sdf_tbl %>% dplyr::select(Sepal_Length, Petal_Length, Species) %>%
                    max_petal_legnth = max(Petal_Length)) %>% 
   arrange(mean_sepal_length) %>% 
   explain()
+~~~
 
+
+
+~~~{.output}
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
+
+~~~
+
+
+
+~~~{.r}
 DBI::dbGetQuery(sc, 
         "SELECT `Species`, AVG(`Sepal_Length`) AS `mean_sepal_length`, MAX(`Petal_Length`) AS `max_petal_legnth`
                 FROM (SELECT `Sepal_Length`, `Petal_Length`, `Species`, ln(`Sepal_Length`) AS `log_Sepal_Length`
@@ -537,14 +470,11 @@ DBI::dbGetQuery(sc,
 
 
 ~~~{.output}
-     Species mean_sepal_length max_petal_legnth
-1     setosa          5.069231              1.9
-2 versicolor          5.936000              5.1
-3  virginica          6.588000              6.9
+Error in DBI::dbGetQuery(sc, "SELECT `Species`, AVG(`Sepal_Length`) AS `mean_sepal_length`, MAX(`Petal_Length`) AS `max_petal_legnth`\n                FROM (SELECT `Sepal_Length`, `Petal_Length`, `Species`, ln(`Sepal_Length`) AS `log_Sepal_Length`\n                FROM (SELECT *\n                FROM (SELECT `Sepal_Length` AS `Sepal_Length`, `Petal_Length` AS `Petal_Length`, `Species` AS `Species`\n                FROM `iris`) `rvbmbsphdh`\n                WHERE ((`Sepal_Length` > 1.0) AND (`Petal_Length` > 1.5))) `stgslkujqx`) `uwmrkgahqh`\n                GROUP BY `Species`\n                ORDER BY `mean_sepal_length`"): 객체 'sc'를 찾을 수 없습니다
 
 ~~~
 
-## 5. 데이터프레임 변환과 중간결과 저장
+# 데이터프레임 변환과 중간결과 저장 {#r-sparklyr-tibble-save}
 
 영구저장소에 저장된 `.csv` 파일을 메모리로 불러올릴 때 `read_csv` 함수를 사용해서 
 R 데이터 프레임으로 변환시킨다. 마찬가지로 R 데이터프레임을 스파크 클러스터 데이터프레임으로 보낼 때 
@@ -563,14 +493,25 @@ R 데이터 프레임으로 변환시킨다. 마찬가지로 R 데이터프레�
 iris_df <- iris_sdf_tbl %>% 
   dplyr::select(starts_with("Sepal"), Species) %>% 
   collect()
+~~~
 
+
+
+~~~{.output}
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
+
+~~~
+
+
+
+~~~{.r}
 class(iris_df)
 ~~~
 
 
 
 ~~~{.output}
-[1] "tbl_df"     "tbl"        "data.frame"
+Error in eval(expr, envir, enclos): 객체 'iris_df'를 찾을 수 없습니다
 
 ~~~
 
@@ -581,14 +522,25 @@ class(iris_df)
 iris_sepal <- iris_sdf_tbl %>%
   dplyr::select(starts_with("Sepal"), Species) %>% 
   compute("iris_sepal")
+~~~
 
+
+
+~~~{.output}
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
+
+~~~
+
+
+
+~~~{.r}
 src_tbls(sc)
 ~~~
 
 
 
 ~~~{.output}
-[1] "iris"       "iris_sepal"
+Error in src_tbls(sc): 객체 'sc'를 찾을 수 없습니다
 
 ~~~
 
@@ -601,13 +553,13 @@ class(iris_sepal)
 
 
 ~~~{.output}
-[1] "tbl_spark" "tbl_sql"   "tbl_lazy"  "tbl"      
+Error in eval(expr, envir, enclos): 객체 'iris_sepal'를 찾을 수 없습니다
 
 ~~~
 
-## 6. 기계학습 사전 준비
+# 기계학습 사전 준비 {#r-sparklyr-tibble-ml}
 
-### 6.1. 스파크, R 스키마 비교
+## 스파크, R 스키마 비교 {#r-sparklyr-tibble-schema}
 
 스파크는 엄격한 자료형을 갖고 있고 동시에 
 통계학이나 데이터분석에서 많이 활용되는 요인(factor)에 대한 개념이 없기 때문에
@@ -621,7 +573,7 @@ class(iris_sepal)
 |   문자형       | character | StringType   |
 |   리스트       | list      | ArrayType    |
 
-### 6.2. 스파크에서 제공하는 기능(함수)
+## 스파크에서 제공하는 기능(함수) {#r-sparklyr-tibble-function}
 
 `dplyr`에서 제공되는 함수 외에 함수명 시작이 `ft_`, `sdf_`, `ml_`로 시작되는 함수들이 있다.
 
@@ -642,44 +594,7 @@ class(iris_sepal)
 
 
 ~~~{.output}
-$Sepal_Length
-$Sepal_Length$name
-[1] "Sepal_Length"
-
-$Sepal_Length$type
-[1] "DoubleType"
-
-
-$Sepal_Width
-$Sepal_Width$name
-[1] "Sepal_Width"
-
-$Sepal_Width$type
-[1] "DoubleType"
-
-
-$Petal_Length
-$Petal_Length$name
-[1] "Petal_Length"
-
-$Petal_Length$type
-[1] "DoubleType"
-
-
-$Petal_Width
-$Petal_Width$name
-[1] "Petal_Width"
-
-$Petal_Width$type
-[1] "DoubleType"
-
-
-$Species
-$Species$name
-[1] "Species"
-
-$Species$type
-[1] "StringType"
+Error in spark_dataframe(x): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
 
 ~~~
 
@@ -694,12 +609,7 @@ iris_schema %>%
 
 
 ~~~{.output}
-          name       type
-1 Sepal_Length DoubleType
-2  Sepal_Width DoubleType
-3 Petal_Length DoubleType
-4  Petal_Width DoubleType
-5      Species StringType
+Error in eval(lhs, parent, parent): 객체 'iris_schema'를 찾을 수 없습니다
 
 ~~~
 
@@ -713,12 +623,30 @@ iris_sdf_df <- iris_sdf_tbl %>%
   ft_binarizer("Sepal_Length", "sepal_length_f", 4.8) %>%
   collect() %>%
   mutate(sepal_length_f = as.logical(sepal_length_f))
+~~~
 
+
+
+~~~{.output}
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
+
+~~~
+
+
+
+~~~{.r}
 ggplot(iris_sdf_df, aes(sepal_length_f)) +
   geom_bar()
 ~~~
 
-<img src="fig/spark-dataframe-factor-1.png" title="plot of chunk spark-dataframe-factor" alt="plot of chunk spark-dataframe-factor" style="display: block; margin: auto;" />
+
+
+~~~{.output}
+Error in ggplot(iris_sdf_df, aes(sepal_length_f)): 객체 'iris_sdf_df'를 찾을 수 없습니다
+
+~~~
+
+
 
 ~~~{.r}
 ## 2.2. 연속형 변수를 범주형 변환 (I)
@@ -732,12 +660,30 @@ iris_sdf_df <- iris_sdf_tbl %>%
   ft_bucketizer("Sepal_Length", "sepal_length_f", splits = sepal_split) %>%
   collect() %>% 
   mutate(sepal_length_f = factor(sepal_length_f, labels=sepal_split_labels))
+~~~
 
+
+
+~~~{.output}
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
+
+~~~
+
+
+
+~~~{.r}
 ggplot(iris_sdf_df, aes(sepal_length_f, Petal_Length)) +
   geom_boxplot()
 ~~~
 
-<img src="fig/spark-dataframe-factor-2.png" title="plot of chunk spark-dataframe-factor" alt="plot of chunk spark-dataframe-factor" style="display: block; margin: auto;" />
+
+
+~~~{.output}
+Error in ggplot(iris_sdf_df, aes(sepal_length_f, Petal_Length)): 객체 'iris_sdf_df'를 찾을 수 없습니다
+
+~~~
+
+
 
 ~~~{.r}
 ## 2.2. 연속형 변수를 범주형 변환 (II)
@@ -752,9 +698,14 @@ iris_sdf_tbl %>%
   geom_boxplot()
 ~~~
 
-<img src="fig/spark-dataframe-factor-3.png" title="plot of chunk spark-dataframe-factor" alt="plot of chunk spark-dataframe-factor" style="display: block; margin: auto;" />
 
-### 6.3. 기계학습 예측 모형 
+
+~~~{.output}
+Error in eval(lhs, parent, parent): 객체 'iris_sdf_tbl'를 찾을 수 없습니다
+
+~~~
+
+## 기계학습 예측 모형  {#r-sparklyr-tibble-predictive-model}
 
 기계학습을 위한 모형이 준비되었다면 다음 단계로 스파크 빅데이터에서 
 `sdf_sample` 함수를 사용하여 표본을 추출(10%)하여 탐색적 데이터분석(EDA)을 진행하는 것도 권장된다.
@@ -770,111 +721,20 @@ iris_sdf_tbl %>%
 iris_sdf_tbl %>% 
   sdf_sample(fraction = 0.1, replacement=FALSE) %>% 
   compute("iris_10_pcnt")
-~~~
 
-
-
-~~~{.output}
-Source:   query [10 x 5]
-Database: spark connection master=local[8] app=sparklyr local=TRUE
-
-# A tibble: 10 x 5
-   Sepal_Length Sepal_Width Petal_Length Petal_Width    Species
-          <dbl>       <dbl>        <dbl>       <dbl>      <chr>
- 1          4.4         2.9          1.4         0.2     setosa
- 2          5.7         4.4          1.5         0.4     setosa
- 3          5.4         3.9          1.3         0.4     setosa
- 4          5.0         3.2          1.2         0.2     setosa
- 5          5.9         3.0          4.2         1.5 versicolor
- 6          6.4         3.2          5.3         2.3  virginica
- 7          6.9         3.2          5.7         2.3  virginica
- 8          5.6         2.8          4.9         2.0  virginica
- 9          7.2         3.2          6.0         1.8  virginica
-10          7.4         2.8          6.1         1.9  virginica
-
-~~~
-
-
-
-~~~{.r}
 src_tbls(sc)
-~~~
 
-
-
-~~~{.output}
-[1] "iris"         "iris_10_pcnt" "iris_sepal"  
-
-~~~
-
-
-
-~~~{.r}
 iris_10_pcnt_tbl <- tbl(sc, "iris_10_pcnt")
 
 glimpse(iris_10_pcnt_tbl)
-~~~
 
-
-
-~~~{.output}
-Observations: 10
-Variables: 5
-
-~~~
-
-
-
-~~~{.output}
-Error in if (width[i] <= max_width[i]) next: TRUE/FALSE가 필요한 곳에 값이 없습니다
-
-~~~
-
-
-
-~~~{.r}
 ## 1.2. 훈련/테스트 데이터셋 -------------------------------
 iris_split_tbl <- iris_sdf_tbl %>% 
   sdf_partition(training = 0.7, testing = 0.3)
 
 iris_split_tbl$training %>% count
-~~~
-
-
-
-~~~{.output}
-Source:   query [1 x 1]
-Database: spark connection master=local[8] app=sparklyr local=TRUE
-
-# A tibble: 1 x 1
-      n
-  <dbl>
-1   113
-
-~~~
-
-
-
-~~~{.r}
 iris_split_tbl$testing %>% count
-~~~
 
-
-
-~~~{.output}
-Source:   query [1 x 1]
-Database: spark connection master=local[8] app=sparklyr local=TRUE
-
-# A tibble: 1 x 1
-      n
-  <dbl>
-1    37
-
-~~~
-
-
-
-~~~{.r}
 ## 1.3. 모형적합 --------------------------------------------
 
 feature_columns <- iris_split_tbl$training %>% 
@@ -895,25 +755,8 @@ iris_responses <- iris_split_tbl$testing %>%
   )
 
 table(iris_responses)
-~~~
 
-
-
-~~~{.output}
-            predicted_species
-Species      setosa versicolor virginica
-  setosa         10          2         0
-  versicolor      1          6         2
-  virginica       0          3        13
-
-~~~
-
-
-
-~~~{.r}
 ggplot(iris_responses, aes(Species, predicted_species)) +
   geom_jitter(width = 0.15, height=0.15, aes(colour = Species), alpha=0.3) +
   geom_abline(intercept=0, slope=1)
 ~~~
-
-<img src="fig/spark-dataframe-ml-1.png" title="plot of chunk spark-dataframe-ml" alt="plot of chunk spark-dataframe-ml" style="display: block; margin: auto;" />
