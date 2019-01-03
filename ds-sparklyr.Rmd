@@ -300,22 +300,21 @@ Contents $ nano Info.plist
 
 ``` {r rstudio-spark, eval=FALSE}
 # 1. sparklyr 팩키지 설치
-install.packages("devtools")
-devtools::install_github("rstudio/sparklyr")
-
-# 2. 스파크가 설치되지 않는 경우 설치 (스파크 버젼 1.6.1)
+# install.packages("devtools")
+# devtools::install_github("rstudio/sparklyr")
 library(sparklyr)
-spark_install(version = "1.6.1")
+
+# 2. 스파크가 설치되지 않는 경우 설치
+# Connections --> New Connection
 
 # 3. 스파크 인스턴스 생성
-library(sparklyr)
 sc <- spark_connect(master = "local")
 
 # 4. 예제 R 데이터프레임을 스파크에 복사
 library(dplyr)
 iris_tbl <- copy_to(sc, iris)
-install.packages("nycflights13")
-install.packages("Lahman")
+# install.packages("nycflights13")
+# install.packages("Lahman")
 flights_tbl <- copy_to(sc, nycflights13::flights, "flights")
 batting_tbl <- copy_to(sc, Lahman::Batting, "batting")
 
@@ -359,6 +358,8 @@ Type :help for more information.
 
 scala> 
 ```
+
+
 
 # AWS 클라우드 스파크 설치 [^ec2-standalone-ec2] {#aws-ec2-spark}
 
