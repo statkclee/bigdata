@@ -1,7 +1,7 @@
 ---
 layout: page
-title: 빋게이터
-subtitle: "Spark와 연결하는 `sparklyr`, `dplyr`, 그리고 기계학습"
+title: 빅데이터
+subtitle: "sparklyr, dplyr, 그리고 기계학습"
 author:
     name: xwMOOC
     url: https://www.facebook.com/groups/tidyverse/
@@ -51,9 +51,9 @@ R에서 로컬 컴퓨터에 스파크를 설치하고 이를 운영하는 것은
 스파크 클러스트 연결을 종료한다.
 
 ``` {r spark-helloworld, eval=FALSE}
-# 1. 설치
+# 1. 라이브러리
 library(sparklyr)
-# spark_install()
+library(tidyverse)
 
 # 2. 스파크 클러스터 연결
 sc <-spark_connect(master="local")
@@ -71,11 +71,18 @@ spark_disconnect(sc=sc)
 `.csv` 파일을 R로 `read_csv()` 함수로 불러오는 것과 마찬가지로 `spark_read_csv()` 함수를 통해 직접 불러오거나,
 이미 데이터프레임으로 R에서 분석가능한 형태로 존재하게 되면 `copy_to()` 명령어를 통해 스파크에 전달한다.
 
-> ### 주의할 점 {.callout}
->
-> `copy_to()` 명령어는 기본적으로 **복사(copy)** 작업으로 느린 특성이 있다.
-> 따라서 이런 작업은 가능하면 회피하고 다른 최적의 전략을 탐색한다.
-> `copy_to()`에 대응되는 `collect()` 작업도 마찬가지로 특별한 경우나 당위성이 없다면 다른 최적화 방법을 탐색한다.
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+**주의할 점**
+
+`copy_to()` 명령어는 기본적으로 **복사(copy)** 작업으로 느린 특성이 있다.
+따라서 이런 작업은 가능하면 회피하고 다른 최적의 전략을 탐색한다.
+`copy_to()`에 대응되는 `collect()` 작업도 마찬가지로 특별한 경우나 당위성이 없다면 다른 최적화 방법을 탐색한다.
+</div>
+
 
 `iris` 데이터프레임을 스파크 클러스터로 전달하는 명령어는 `copy_to(sc, iris)`으로 스파크 클러스트(sc)에 `iris`를 복사해 보낸다.
 `src_tbls`
@@ -84,8 +91,6 @@ spark_disconnect(sc=sc)
 
 ``` {r spark-copy, eval=TRUE, message=FALSE, warning=FALSE}
 glimpse(iris)
-
-# Sys.setenv(SPARK_HOME="C:/spark-1.6.2-bin-hadoop2.6")
 
 sc <-spark_connect(master="local")
 
@@ -332,7 +337,7 @@ iris_sdf_tbl %>%
 훈련데이터를 예측모형(Random Forest) `ml_random_forest` 함수에 넣어 예측모형을 개발하고 나서,
 검증 데이터로 예측모형의 성능을 점검한다. 
 
-``` {r spark-dataframe-ml}
+``` {r spark-dataframe-ml, eval=FALSE}
 # 1. 기계학습 -----------------------------------------------
 ## 1.1. 표본추출 --------------------------------------------
 iris_sdf_tbl %>% 
