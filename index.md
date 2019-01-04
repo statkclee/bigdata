@@ -13,20 +13,21 @@ title: 빅데이터
 
 ## 학습목차 
 
-- [기계학습 클라우드(AWS) 개발배포 환경](ml-aws-spark.html)
-    + [시나리오별 클라우드(AWS) 컴퓨팅 자원을 데이터 과학에 활용](ml-aws-from-pc.html)
-    + [AWS 우분투 EC2 + S3 버킷 + RStudio 서버](ds-aws-rstudio-server.html)
-    + [스파크 EC2 클러스터 - 부싯돌(flintrock)](ml-aws-ec2-flintrock.html)
-        - [스파크 EC2 클러스터 - 데이터과학 툴체인(R, sparklyr)](ml-aws-ec2-flintrock-sparklyr.html)
-    + [분석할 데이터를 스파크에 적재하는 방법 - S3 포함](ml-ec2-s3.html)    
 - [빅데이터 스파크(Spark)](bigdata-spark-mooc.html)
     + [단독형 스파크 설치 - PC/노트북, EC2 원격 컴퓨터](ds-sparklyr.html) 
     + [Spark와 연결하는 `sparklyr`, `dplyr`, 그리고 기계학습](ml-sparklyr.html)
+- [파이-스파크(`pyspark`)](bigdata-pyspark.html)
 - [$H_2 O$ 기계학습](h20-arch.html)
     + [$H_2 O$ 하둡 스파크 클러스터 설치](ds-h2o-spark-hadoop.html)    
     + [$H_2 O$ R 연습문제](h2o-r-exercise.html)
     + [$H_2 O$ 앙상블 모형](h2o-ensemble-higgs.html)
     + [$H_2 O$ GBM 모형 세부조정](h2o-gbm-titanic.html)
+- [기계학습 클라우드(AWS) 개발배포 환경](ml-aws-spark.html)
+    + [시나리오별 클라우드(AWS) 컴퓨팅 자원을 데이터 과학에 활용](ml-aws-from-pc.html)
+    + [AWS 우분투 EC2 + S3 버킷 + RStudio 서버](ds-aws-rstudio-server.html)
+    + [스파크 EC2 클러스터 - 부싯돌(flintrock)](ml-aws-ec2-flintrock.html)
+        - [스파크 EC2 클러스터 - 데이터과학 툴체인(R, sparklyr)](ml-aws-ec2-flintrock-sparklyr.html)
+    + [분석할 데이터를 스파크에 적재하는 방법 - S3 포함](ml-ec2-s3.html)
 - 참고
     - [빅메모리(bigmemory)](bigdata-bigmemeory.html): "빅데이터는 디스크에 쓰고 R 메모리라고 읽는다"
     - [SparkR 들어가며](sparkr-intro.html)

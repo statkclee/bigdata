@@ -1,0 +1,85 @@
+---
+layout: page
+title: 빅데이터 
+subtitle: "파이-스파크(`pyspark`)"
+author:
+    name: xwMOOC
+    url: https://www.facebook.com/groups/tidyverse/
+    affiliation: Tidyverse Korea
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+
+``` {r, include=FALSE}
+# source("tools/chunk-options.R")
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
+                    comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+```
+
+
+# `pyspark` IDE [^pyspark-jupyter] {#spark-pyspark-ide}
+
+[^pyspark-jupyter]: [Charles Bochet (May 2, 2017), "Get Started with PySpark and Jupyter Notebook in 3 Minutes"](https://blog.sicara.com/get-started-pyspark-jupyter-guide-tutorial-ae2fe84f594f)
+
+자바 &rarr; 하둡 &rarr; 스파크를 설치한 후에 `pyspark`를 통해 작업을 수행하는 방식이 스칼라 언어가 아닌 경우 많이 사용되고 있다.
+이를 위해서 쥬피터 노트북 같은 IDE가 필요한데 스파크에 `pyspark`을 통해 쥬피터 노트북으로 작업하는 방식을 살펴보자.
+
+<img src="fig/pyspark-jupyter.png" alt="스파크 쥬피터 노트북" width="57%" />
+
+스파크에 `pyspark`로 접속하여 분석과 개발작업을 수행하는 방법은 쥬피터 노트북을 사용할 경우 두가지 방식이 존재한다.
+
+## PySpark 드라이버 활용 {#spark-pyspark-ide-env}
+
+`~/.bashrc` 파일에 환경설정 정보 반영하여 `pyspark` 명령어를 실행시키면 웹브라우저에 쥬피터 노트북이 떠 바로 작업하는 방법이 있다.
+
+``` {r pyspark-bashrc, eval=FALSE}
+# ~/.bashrc 파일 추가 내용
+export PYSPARK_DRIVER_PYTHON=jupyter
+export PYSPARK_DRIVER_PYTHON_OPTS='notebook'
+```
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+쥬피터 노트북에 (재)연결관련하여 문제가 발생할 경우 `cmd` 터미널에서 다음 명령어를 실행할 경우 도움이 될 수 있다.
+
+`conda update jupyterlab` 
+
+</div>
+
+## `findspark` 팩키지 사용 {#spark-pyspark-ide-jupyter}
+
+`pip install findspark` 명령어로 `findspark`를 설치한다. `jupyter notebook` 명령어 혹은 Anaconda Navigator에서 쥬피터 노트북을 실행한 후에 `import findspark` 명령어로 
+팩키지를 활용하는 방식이다. 즉, 쥬피터 노트북을 실행시키고 `import`로 불러와서 처리하는 방법이다.
+
+``` {r findspark-jupyter-notebook, eval=FALSE}
+import findspark
+findspark.init()
+import pyspark
+import random
+sc = pyspark.SparkContext(appName="Pi")
+num_samples = 100000
+def inside(p):     
+  x, y = random.random(), random.random()
+  return x*x + y*y < 1
+count = sc.parallelize(range(0, num_samples)).filter(inside).count()
+pi = 4 * count / num_samples
+print(pi)
+sc.stop()
+```
+
+<img src="fig/pyspark-jupyter-notebook.png" alt="스파크 쥬피터 노트북" width="100%" />
+
+
