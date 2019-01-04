@@ -28,7 +28,7 @@ title: 빅데이터
     + [스파크 EC2 클러스터 - 부싯돌(flintrock)](ml-aws-ec2-flintrock.html)
         - [스파크 EC2 클러스터 - 데이터과학 툴체인(R, sparklyr)](ml-aws-ec2-flintrock-sparklyr.html)
     + [분석할 데이터를 스파크에 적재하는 방법 - S3 포함](ml-ec2-s3.html)
-- 참고
+- **참고**
     - [빅메모리(bigmemory)](bigdata-bigmemeory.html): "빅데이터는 디스크에 쓰고 R 메모리라고 읽는다"
     - [SparkR 들어가며](sparkr-intro.html)
         - [SparkR 설치](spark-hadoop-install.html)
