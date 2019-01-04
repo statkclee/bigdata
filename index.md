@@ -25,7 +25,6 @@ title: 빅데이터
 - [$H_2 O$ 기계학습](h20-arch.html)
     + [$H_2 O$ 하둡 스파크 클러스터 설치](ds-h2o-spark-hadoop.html)    
     + [$H_2 O$ R 연습문제](h2o-r-exercise.html)
-    + [$H_2 O$ 헬로 월드](h2o-hello-world.html)
     + [$H_2 O$ 앙상블 모형](h2o-ensemble-higgs.html)
     + [$H_2 O$ GBM 모형 세부조정](h2o-gbm-titanic.html)
     + [$H_2 O$ vs 딥러닝 랜딩클럽 대출 데이터](h2o-deep-learning-landingclub.html)
