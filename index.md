@@ -27,7 +27,6 @@ title: 빅데이터
     + [$H_2 O$ R 연습문제](h2o-r-exercise.html)
     + [$H_2 O$ 앙상블 모형](h2o-ensemble-higgs.html)
     + [$H_2 O$ GBM 모형 세부조정](h2o-gbm-titanic.html)
-    + [$H_2 O$ vs 딥러닝 랜딩클럽 대출 데이터](h2o-deep-learning-landingclub.html)
 - 참고
     - [빅메모리(bigmemory)](bigdata-bigmemeory.html): "빅데이터는 디스크에 쓰고 R 메모리라고 읽는다"
     - [SparkR 들어가며](sparkr-intro.html)
