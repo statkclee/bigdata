@@ -1,34 +1,38 @@
 ---
 layout: page
 title: xwMOOC 딥러닝
-subtitle: $H_2 O$ R 연습문제
+subtitle: "$H_2 O$ R 연습문제"
+author:
+    name: xwMOOC
+    url: https://www.facebook.com/groups/tidyverse/
+    affiliation: Tidyverse Korea
+date: "`r Sys.Date()`"
 output:
   html_document: 
     toc: yes
-    keep_md: yes
-  pdf_document:
-    latex_engine: xelatex
-mainfont: NanumGothic
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 
-```{r, include=FALSE}
-source("tools/chunk-options.R") 
-
-knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+``` {r, include=FALSE}
+# source("tools/chunk-options.R")
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
+                    comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 
 library(keras)
 library(tidyverse)
-library(ggplot2)
 library(jpeg)
 library(extrafont)
 loadfonts()
-
-options(scipen = 999)
-options(family="NanumGothic")
 ```
 
-## 1. $H_2 O$ 연습문제 1부 {#h2o-exercise-part-1}
+# $H_2 O$ 연습문제 1부 {#h2o-exercise-part-1}
 
 $H_2 O$ 학습기는 최신 자바를 설치를 요구하고 있다. 따라서 자바를 설치하고 나서 
 `h2o` 팩키지를 설치한다. 연습문제 영어 원본은  
@@ -36,7 +40,7 @@ $H_2 O$ 학습기는 최신 자바를 설치를 요구하고 있다. 따라서 �
 해답은 [Data Analytics with H20 in R Exercises Part 1 Solution](http://www.r-exercises.com/2017/09/22/big-data-analytics-with-h20-in-r-exercises-part-1-solution/)을 참조한다.
 
 
-## 1.1. 연습문제  {#h2o-exercise-part-1-ex01}
+## 연습문제  {#h2o-exercise-part-1-ex01}
 
  H2O 다운로드 후 클러스트 초기화한다.
 
@@ -46,7 +50,7 @@ library(h2o)
 h2o.cluster <- h2o.init()
 ```
 
-## 1.2. 연습문제 {#h2o-exercise-part-1-ex02}
+## 연습문제 {#h2o-exercise-part-1-ex02}
 
 clusterinfo를 통해 클러스터 정보를 확인한다.
 
@@ -54,7 +58,7 @@ clusterinfo를 통해 클러스터 정보를 확인한다.
 h2o.clusterInfo()
 ```
 
-## 1.3. 연습문제  {#h2o-exercise-part-1-ex03}
+## 연습문제  {#h2o-exercise-part-1-ex03}
 
 H2O 작업을 `deom` 함수를 통해서 작업할 수 있다. H2O glm 모형을 살펴보자.
 
@@ -62,16 +66,17 @@ H2O 작업을 `deom` 함수를 통해서 작업할 수 있다. H2O glm 모형을
 demo(h2o.glm)
 ```
 
-## 1.4. 연습문제 {#h2o-exercise-part-1-ex04}
+## 연습문제 {#h2o-exercise-part-1-ex04}
 
 H2O 깃헙에서 `load.csv` 파일을 다운로드 받아 이를 H2O로 가져온다.
 파일 위치: [loan.csv](https://raw.githubusercontent.com/h2oai/h2o-tutorials/master/training/data/loan.csv), 약 16MB.
 
 ``` {r loan-data-import}
+# download.file(url="https://raw.githubusercontent.com/h2oai/h2o-tutorials/master/training/data/loan.csv", destfile = "data/loan.csv")
 loan.hex <- h2o.importFile(path = normalizePath("data/loan.csv"))
 ```
 
-## 1.5. 연습문제 {#h2o-exercise-part-1-ex05}
+## 연습문제 {#h2o-exercise-part-1-ex05}
 
 H2O 클러스터로 불러온 대출 데이터 자료형을 파악한다. 데이터프레임가 아니라는 사실을 유념한다. 대출데이터를 요약한다.
 
@@ -84,7 +89,7 @@ h2o.summary(loan.hex)
 ```
 
 
-## 1.6. 연습문제 {#h2o-exercise-part-1-ex06}
+## 연습문제 {#h2o-exercise-part-1-ex06}
 
 R 환경에 데이터프레임을 H2O 클러스터로 데이터 이전해야 하는 경우가 있다. `as.h2o` 함수를 사용해서 mtcars 데이터프레임을 H2OFrame으로 변환시킨다.
 
@@ -95,7 +100,7 @@ class(mtcars.data)
 ```
 
 
-## 1.7. 연습문제 {#h2o-exercise-part-1-ex07}
+## 연습문제 {#h2o-exercise-part-1-ex07}
 
 `h2o.dim` 함수를 사용해서 H2Oframe 차원정보를 확인한다.
 
@@ -103,7 +108,7 @@ class(mtcars.data)
 h2o.dim(loan.hex)
 ```
 
-## 1.8. 연습문제 {#h2o-exercise-part-1-ex08}
+## 연습문제 {#h2o-exercise-part-1-ex08}
 
 H2Oframe 대출데이터의 칼럼명을 확인한다.
 
@@ -111,7 +116,7 @@ H2Oframe 대출데이터의 칼럼명을 확인한다.
 h2o.colnames(loan.hex)
 ```
 
-## 1.9. 연습문제 {#h2o-exercise-part-1-ex09}
+## 연습문제 {#h2o-exercise-part-1-ex09}
 
 H2Oframe 대출데이터에서 대출금액에 대한 히스토그램을 그려본다.
 
@@ -119,7 +124,7 @@ H2Oframe 대출데이터에서 대출금액에 대한 히스토그램을 그려�
 h2o.hist(loan.hex$loan_amnt)
 ```
 
-## 1.10. 연습문제 {#h2o-exercise-part-1-ex10}
+## 연습문제 {#h2o-exercise-part-1-ex10}
 
 H2Oframe 대출데이터에서 주택 소유 그룹별로 대출 평균금액을 구하시오
 
