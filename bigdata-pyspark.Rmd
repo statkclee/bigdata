@@ -48,17 +48,6 @@ export PYSPARK_DRIVER_PYTHON=jupyter
 export PYSPARK_DRIVER_PYTHON_OPTS='notebook'
 ```
 
-<style>
-div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
-</style>
-<div class = "blue">
-
-쥬피터 노트북에 (재)연결관련하여 문제가 발생할 경우 `cmd` 터미널에서 다음 명령어를 실행할 경우 도움이 될 수 있다.
-
-`conda update jupyterlab` 
-
-</div>
-
 ## `findspark` 팩키지 사용 {#spark-pyspark-ide-jupyter}
 
 `pip install findspark` 명령어로 `findspark`를 설치한다. `jupyter notebook` 명령어 혹은 Anaconda Navigator에서 쥬피터 노트북을 실행한 후에 `import findspark` 명령어로 
@@ -83,3 +72,25 @@ sc.stop()
 <img src="fig/pyspark-jupyter-notebook.png" alt="스파크 쥬피터 노트북" width="100%" />
 
 
+# 노트북 운영문제 [^notebook-error] {#jupyter-notebook-trouble-shooting}
+
+[^notebook-error]: [Error loading server extension jupyter_nbextensions_configurator #2584](https://github.com/jupyter/notebook/issues/2584)
+
+`jupyter notebook`을 실행한 후에 `...NotebookApp] Error loading server extension jupyterlab` 문제가 발생될 경우 다음 명령어를 실행하면 오류를 잡을 수 있다.
+
+```{r jupyter-notebook-extension, eval=FALSE}
+> jupyter serverextension disable --sys-prefix jupyter_nbextensions_configurator
+```
+
+
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+쥬피터 노트북에 (재)연결관련하여 문제가 발생할 경우 `cmd` 터미널에서 다음 명령어를 실행할 경우 도움이 될 수 있다.
+
+`conda update jupyterlab` 
+
+</div>

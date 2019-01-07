@@ -1,0 +1,109 @@
+---
+layout: page
+title: 빅데이터 
+subtitle: "자료 변환"
+author:
+    name: xwMOOC
+    url: https://www.facebook.com/groups/tidyverse/
+    affiliation: Tidyverse Korea
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+
+``` {r, include=FALSE}
+# source("tools/chunk-options.R")
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
+                    comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+```
+
+# RDD 자료변환 개요 {#pyspark-rdd-transformation-overview}
+
+`sc.parallelize()` 혹은 `sc.textFile()` 함수로 리스트나 외부 `.csv` 혹은 텍스트 파일을 스파크로 불러들인 후에 
+`.take()`, `.map()`, `.filter()`, `.reduceByKey()`, `.sortByKey()`, `.countByKey()`, `.flatMap()` 함수를 활용하여 원하는 형태 데이터로 가공을 시킨다. 그리고 나서 다시 `.collect()`함수로 스파크 RDD를 뽑아낸다.
+
+<img src="fig/pyspark-map-workflow.png" alt="pyspark 작업흐름도" width="100%" />
+
+
+# RDD 변환 기초 {#pyspark-rdd-transformation-list}
+
+## 리스트 RDD 변환 {#pyspark-rdd-transformation-list}
+
+파이썬 리스트 데이터 객체(`[1,2,3,4,5]`)를 스파크 RDD로 클러스터에 올린 후에 `.map()` 함수로 연산작업을 수행한다. 그리고 나서 다시 스파크에서 파이썬으로 RDD 객체를 빼내는데 `.collect()` 함수를 사용해서 가져오고 이를 `for` 문을 돌려 제곱 연산이 제대로 되었는지 확인한다.
+
+
+```{r pyspark-rdd-map-list, eval=FALSE}
+import findspark
+findspark.init()
+import pyspark
+
+sc = pyspark.SparkContext()
+
+# 숫자 리스트를 바탕으로 RDD 객체 생성
+list_rdd = sc.parallelize([1,2,3,4,5])
+
+list_squared_rdd = list_rdd.map(lambda x: x**2)
+list_squared_list = list_squared_rdd.collect()
+
+for element in list_squared_list:
+    print("원소를 제곱한 값: ", element)
+
+# 출력결과 -------------
+원소를 제곱한 값:  1
+원소를 제곱한 값:  4
+원소를 제곱한 값:  9
+원소를 제곱한 값:  16
+원소를 제곱한 값:  25
+```
+
+## 외부 데이터 리스트 RDD 변환 {#pyspark-rdd-transformation-csv}
+
+`iris.csv` 외부 `.csv` 데이터를  `sc.textFile()` 함수로 불러와서 RDD 객체로 변환시킨다.
+람다 무명함수로 `.filter`를 걸어 "setosa"가 포함된 모든 행을 뽑아내서 `iris_setosa_rdd` RDD 객체를 생성시킨다.
+그리고 나서 `.count()` 함수로 "setosa"가 포함된 행을 센다. `.take()` 함수로 스파크 클러스터에서 빼내서 `for`문을 돌려 "setosa"가 포함된 7줄을 뽑아내서 출력시킨다.
+
+```{r pyspark-rdd-map-csv, eval=FALSE}
+iris_rdd = sc.textFile("../data/iris.csv")
+
+# "setosa" 품종이 포함된 행만 필터를 걸어서 추출함.
+iris_setosa_rdd = iris_rdd.filter(lambda species: "setosa" in species)
+
+# "setosa" 품종이 포함된 행수를 개수함.
+print("IRIS 데이터 setosa 품종수: ", iris_setosa_rdd.count())
+
+# 첫 7행을 화면에 출력시킴
+for species in iris_setosa_rdd.take(7): 
+  print(species)
+
+# 출력결과 -------------
+IRIS 데이터 setosa 품종수:  50
+5.1,3.5,1.4,0.2,setosa
+4.9,3.0,1.4,0.2,setosa
+4.7,3.2,1.3,0.2,setosa
+4.6,3.1,1.5,0.2,setosa
+5.0,3.6,1.4,0.2,setosa
+5.4,3.9,1.7,0.4,setosa
+4.6,3.4,1.4,0.3,setosa
+```
+
+# RDD 변환 실무 {#pyspark-rdd-transformation-in-practice}
+
+## RDD 변환 실무 {#pyspark-rdd-in-practice-key-value}
+
+
+```{r}
+
+```
+
+
+
+
