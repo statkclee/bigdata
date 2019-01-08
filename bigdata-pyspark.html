@@ -1742,6 +1742,14 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
 </ul></li>
 </ol>
 </div>
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class="blue">
+<p><strong>NativeCodeLoader:62 - Unable to load native-hadoop library for your platform… using builtin-java classes where applicable … </strong> <a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a></p>
+<p><code>HADOOP_OPTS</code> 환경변수 설정을 다음과 같이 수행하면 된다.</p>
+<p><code>export HADOOP_OPTS=&quot;$HADOOP_OPTS -Djava.library.path=$HADOOP_HOME/lib/native&quot;</code></p>
+</div>
 </div>
 <div class="footnotes">
 <hr />
@@ -1749,6 +1757,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
 <li id="fn1"><p><a href="https://blog.sicara.com/get-started-pyspark-jupyter-guide-tutorial-ae2fe84f594f">Charles Bochet (May 2, 2017), “Get Started with PySpark and Jupyter Notebook in 3 Minutes”</a><a href="#fnref1" class="footnote-back">↩</a></p></li>
 <li id="fn2"><p><a href="https://github.com/jupyter/notebook/issues/2584">Error loading server extension jupyter_nbextensions_configurator #2584</a><a href="#fnref2" class="footnote-back">↩</a></p></li>
 <li id="fn3"><p><a href="https://stackoverflow.com/questions/42350182/jupyter-notebook-keeps-reconnecting-to-kernel">Jupyter notebook keeps reconnecting to kernel</a><a href="#fnref3" class="footnote-back">↩</a></p></li>
+<li id="fn4"><p><a href="https://stackoverflow.com/questions/19943766/hadoop-unable-to-load-native-hadoop-library-for-your-platform-warning">Hadoop “Unable to load native-hadoop library for your platform” warning</a><a href="#fnref4" class="footnote-back">↩</a></p></li>
 </ol>
 </div>
 
