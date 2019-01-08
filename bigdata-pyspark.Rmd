@@ -94,3 +94,26 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
 `conda update jupyterlab` 
 
 </div>
+
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+**쥬피터 노트북에 (재)연결관련하여 문제가 발생할 경우(Jupyter notebook keeps reconnecting to kernel)** [^stackoverflow-reconnect]
+
+[^stackoverflow-reconnect]: [Jupyter notebook keeps reconnecting to kernel](https://stackoverflow.com/questions/42350182/jupyter-notebook-keeps-reconnecting-to-kernel)
+
+포트(port)가 충돌나서 생기는 문제이기 때문에 이를 해결하는 방식은 다음과 같다.
+
+1. `C:\Users\<사용자명>\.jupyter` 디렉토리로 이동한다.
+1. `jupyter_notebook_config.py` 파일을 연다.
+1. `c.NotebookApp.port` 행을 찾아 적당한 포트번호로 바꾼다.
+    - 예를 들어: `8888` &rarr; `9875`
+
+
+</div>
+
+
+

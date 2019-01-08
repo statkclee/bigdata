@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2019-01-07" />
+<meta name="date" content="2019-01-08" />
 
 <title>빅데이터</title>
 
@@ -1680,7 +1680,7 @@ div.tocify {
 <h3 class="subtitle"><em>파이-스파크(<code>pyspark</code>)</em></h3>
 <h4 class="author"><em>xwMOOC</em></h4>
 <address class="author_afil">
-Tidyverse Korea<br><h4 class="date"><em>2019-01-07</em></h4>
+Tidyverse Korea<br><h4 class="date"><em>2019-01-08</em></h4>
 
 </div>
 
@@ -1727,12 +1727,28 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
 <p>쥬피터 노트북에 (재)연결관련하여 문제가 발생할 경우 <code>cmd</code> 터미널에서 다음 명령어를 실행할 경우 도움이 될 수 있다.</p>
 <p><code>conda update jupyterlab</code></p>
 </div>
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class="blue">
+<p><strong>쥬피터 노트북에 (재)연결관련하여 문제가 발생할 경우(Jupyter notebook keeps reconnecting to kernel)</strong> <a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
+<p>포트(port)가 충돌나서 생기는 문제이기 때문에 이를 해결하는 방식은 다음과 같다.</p>
+<ol style="list-style-type: decimal">
+<li><code>C:\Users\&lt;사용자명&gt;\.jupyter</code> 디렉토리로 이동한다.</li>
+<li><code>jupyter_notebook_config.py</code> 파일을 연다.</li>
+<li><code>c.NotebookApp.port</code> 행을 찾아 적당한 포트번호로 바꾼다.
+<ul>
+<li>예를 들어: <code>8888</code> → <code>9875</code></li>
+</ul></li>
+</ol>
+</div>
 </div>
 <div class="footnotes">
 <hr />
 <ol>
 <li id="fn1"><p><a href="https://blog.sicara.com/get-started-pyspark-jupyter-guide-tutorial-ae2fe84f594f">Charles Bochet (May 2, 2017), “Get Started with PySpark and Jupyter Notebook in 3 Minutes”</a><a href="#fnref1" class="footnote-back">↩</a></p></li>
 <li id="fn2"><p><a href="https://github.com/jupyter/notebook/issues/2584">Error loading server extension jupyter_nbextensions_configurator #2584</a><a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p><a href="https://stackoverflow.com/questions/42350182/jupyter-notebook-keeps-reconnecting-to-kernel">Jupyter notebook keeps reconnecting to kernel</a><a href="#fnref3" class="footnote-back">↩</a></p></li>
 </ol>
 </div>
 
