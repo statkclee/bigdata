@@ -98,7 +98,15 @@ div.output pre{
 `findspark` 팩키지를 통해서 스파크를 찾아내고 `pyspark.SparkContext` 명령어로 스파크 접속지점을 특정한다.
 `sc` 변수를 통해 스파크 버젼, 파이썬 버전, 마스터 정보를 확인한다.
 
-``` {r pyspark-sparkcontext, eval=FALSE}
+R 마크다운으로 문서작업을 하기 위해서 먼저 파이썬을 사용할 수 있도록 `reticulate`를 활용하여 파이썬을 사용할 수 있도록 조치를 취한다.
+
+```{r setup-python}
+library(reticulate)
+use_condaenv("anaconda3")
+```
+
+
+``` {python pyspark-sparkcontext}
 import findspark
 findspark.init()
 import pyspark
@@ -114,7 +122,9 @@ print("Spark Context 파이썬 버전:", sc.pythonVer)
 
 # SparkContext 마스터
 print("Spark Context 마스터:", sc.master)
+```
 
+``` {r pyspark-sparkcontext-output, eval=FALSE}
 # 출력결과 -----------------------
 스파크 컨텍스트 버젼:  2.3.0
 Spark Context 파이썬 버전: 3.6
@@ -130,18 +140,19 @@ Spark Context 마스터: local[*]
 `sc.parallelize()` 함수로 파이썬 리스트를 스파크 클러스터로 가져오는 코드는 다음과 같다.
 파이썬 리스트가 스파크 `RDD`로 변환된 것을 확인할 수 있다.
 
-```{r pyspark-import, eval=FALSE}
+```{python pyspark-import}
 seq_number = range(1, 100)
 
 # PySpark으로 리스트 데이터 가져오기
 spark_data = sc.parallelize(seq_number)
 
 print(spark_data)
+```
 
+```{r pyspark-import-output, eval=FALSE}
 # 출력결과 -----------------------
 PythonRDD[1] at RDD at PythonRDD.scala:48
 ```
-
 
 
 ## `sc.textFile` {#sparkcontext-import-textFile}
@@ -149,9 +160,12 @@ PythonRDD[1] at RDD at PythonRDD.scala:48
 `sc.textFile()` 함수로 외부 텍스트 데이터를 스파크 클러스터로 가져오는 코드는 다음과 같다.
 `iris.csv` 파일이 스파크 `RDD`로 변환된 것을 확인할 수 있다. `iris_partition_rdd.getNumPartitions()` 함수로 몇조각으로 파티션이 나뉘었는지도 확인할 수 있다. 
 
-```{r pyspark-import-textFile, eval=FALSE}
+```{python pyspark-import-textFile}
 iris = sc.textFile("../data/iris.csv")
 print(iris)
+```
+
+```{r pyspark-import-textFile-output, eval=FALSE}
 # 출력결과 -----------------------
 ../data/iris.csv MapPartitionsRDD[5] at textFile at <unknown>:0
 ```
@@ -162,19 +176,21 @@ print(iris)
 텍스트 리스트를 `sc.parallelize()` 함수로 데이터를 가져온다. 그리고 나서 `type()` 명령어로 자료형이 RDD라는 사실을 확인한다.
 `sc.textFile()` 함수로 외부 `.csv` 데이터를 가져올 경우 `minPartitions`인자를 설정하여 원본 데이터, 즉 빅데이터를 몇조각으로 나눌지 지정할 수 있다. 
 
-```{r pyspark-import-set-forward, eval=FALSE}
+```{python pyspark-import-set-forward}
 # 단어 리스트를 바탕으로 RDD 객체 생성
 list_rdd = sc.parallelize(["빅데이터는", "스파크로", "스몰 데이터는", "데이터프레임으로"])
 # RDD 자료형 확인
 print("RDD 자료형: ", type(list_rdd))
 
-# 출력결과 -----------------------
-The type of RDD is <class 'pyspark.rdd.RDD'>
-  
 # 단어 리스트를 바탕으로 파티션 반영 RDD 객체 생성
-iris_partition_rdd = sc.textFile("../data/iris.csv", minPartitions=3)
+iris_partition_rdd = sc.textFile("data/iris.csv", minPartitions=3)
 # RDD 자료형 확인
 print("RDD 자료형: ", type(iris_partition_rdd), "\n파티션 갯수:", iris_partition_rdd.getNumPartitions())
+```
+
+```{r pyspark-import-set-forward-output, eval=FALSE}
+# 출력결과 -----------------------
+The type of RDD is <class 'pyspark.rdd.RDD'>
 
 # 출력결과 -----------------------
 RDD 자료형:  <class 'pyspark.rdd.RDD'> 

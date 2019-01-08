@@ -19,7 +19,7 @@ title: 빅데이터
 - [파이-스파크(`pyspark`)](bigdata-pyspark.html)
     + [자료 구조](bigdata-pyspark-data-structure.html)
     + [자료 변환](bigdata-pyspark-data-transformation.html)
-    + [예측 모형](bigdata-pyspark-predictive-model.html)
+    + [기계학습 예측모형](bigdata-pyspark-predictive-model.html)
 - [$H_2 O$ 기계학습](h20-arch.html)
     + [$H_2 O$ 하둡 스파크 클러스터 설치](ds-h2o-spark-hadoop.html)    
     + [$H_2 O$ R 연습문제](h2o-r-exercise.html)
