@@ -31,6 +31,7 @@ title: 빅데이터
     + [AWS EMR - `sparklyr`](bigdata-aws-emr.html)
     + [시나리오별 클라우드(AWS) 컴퓨팅 자원을 데이터 과학에 활용](ml-aws-from-pc.html)
     + [AWS 우분투 EC2 + S3 버킷 + RStudio 서버](ds-aws-rstudio-server.html)
+        + [AWS 우분투 EC2 + S3 버킷 + RStudio 서버 - 백만곡(One Million Song)](bigdata-ec2-s3-million-song.html)
     + [스파크 EC2 클러스터 - 부싯돌(flintrock)](ml-aws-ec2-flintrock.html)
         - [스파크 EC2 클러스터 - 데이터과학 툴체인(R, sparklyr)](ml-aws-ec2-flintrock-sparklyr.html)
     + [분석할 데이터를 스파크에 적재하는 방법 - S3 포함](ml-ec2-s3.html)
