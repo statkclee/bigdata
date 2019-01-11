@@ -133,5 +133,152 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
 </div>
 
 
+# AWS EC2 쥬피터 노트북 [^aws-ec2-jupyter] [^aws-ec2-gpu-jupyter] {#spark-pyspark-jupyter-notebook-ide}
 
+[^aws-ec2-jupyter]: [Alex Sanchez (Jun 30, 2017), "Jupyter Notebooks on AWS EC2 in 15 (mostly easy) steps"](https://medium.com/@alexjsanchez/python-3-notebooks-on-aws-ec2-in-15-mostly-easy-steps-2ec5e662c6c6)
 
+[^aws-ec2-gpu-jupyter]: [Margaret Maynard-Reid (Mar 27, 2018), "Setting up AWS EC2 for Running Jupyter Notebook on GPU in the Cloud"](https://medium.com/@margaretmz/setting-up-aws-ec2-for-running-jupyter-notebook-on-gpu-c281231fad3f)
+
+AWS EC2 인스턴스를 생성시키고 스파크를 하둡과 함께 설치한 후에 S3 혹은 기타 저장된 데이터를 분석하고 모형을 만들려면 개발환경이 필요한데 
+쥬피터 노트북을 활용하여 스파크 클러스터 위에서 작업하는 방향을 잡는다. 
+로컬 컴퓨터에서 쥬피터 노트북 환경설정하는 것과 달리 외부 클라우드 누구나 접속할 수 있는 상황이라 보안관련 상황을 설정하여 본인만 안전하게 사용할 수 있도록
+쥬피터 노트북에 설정을 추가시킨다. 
+
+<iframe width="300" height="180" src="https://www.youtube.com/embed/YBdYTgwb2OM" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+## 쥬피터 노트북 설치 - 아나콘다3 {#spark-pyspark-jupyter-notebook-install} 
+
+가장 먼저 쥬피터 노트북을 설치하는데 즉접 `pip install jupyter` 명령어로 
+쥬피터 노트북만 설치해도 되고, 어챠피 기계학습을 비롯한 다양한 분석을 수행할 것이니
+아나콘다 3을 설치하여 한방에 해결한다. [Download Anaconda Distribution](https://www.anaconda.com/download/)에 가서 
+[Anaconda 2018.12 For Linux Installer](https://repo.continuum.io/archive/Anaconda3-2018.12-Linux-x86_64.sh)를 선택하여 링크 주소를 받아낸다.
+`wget`으로 아나콘다3를 가져와서 `bash`로 설치한다.
+
+``` {r download-anaconda-ubuntu, eval=FALSE}
+$ wget https://repo.continuum.io/archive/Anaconda3-4.4.0-Linux-x86_64.sh
+$ bash Anaconda3-4.4.0-Linux-x86_64.sh
+```
+
+`.bashrc` 파일에 아나콘다3 환경을 자동 저장시키면 되지만, 혹시 건너뛴 경우
+`export PATH="/home/ec2-user/anaconda3/bin:$PATH"`을 추가시킨다.
+`source .bashrc` 명령어로 환경설정 사항을 적용시키게 되면 파이썬 엔진이 바뀐 것이 확인된다.
+
+``` {r download-anaconda-ubuntu-python, eval=FALSE}
+$ which python 
+/usr/bin/python
+$ source .bashrc
+$ which python 
+/home/ubuntu/anaconda3/bin/python
+```
+
+## 쥬피터 노트북 비밀번호 설정 {#spark-pyspark-jupyter-notebook-password}
+
+쉘에서 `ipython` 명령어를 치면 인터랙티브 파이썬 모드로 들어가게 된다.
+`from IPython.lib import passwd` 에서 `passwd()` 명령어를 통해 `SHA` 해쉬값을 생성시켜 둔다.
+나중에 EC2 인스턴스 쥬피터 노트북에 들어가기 위한 비밀번호로 사용한다. 
+`SHA` 해쉬값은 `.jupyter/jupyter_notebook_config.py` 환경설정 내용을 정리할 때 다시 활용한다.
+
+``` {r download-anaconda-ubuntu-password, eval=FALSE}
+In [1]: from IPython.lib import passwd
+
+In [2]: passwd()
+Enter password:
+Verify password:
+Out[2]: 'sha1:c69d83xxxx'
+```
+
+## 웹브라우저를 통해 로컬 컴퓨터에서 EC2 쥬피터 서버 접속  {#spark-pyspark-jupyter-notebook-certificiate}
+
+웹브라우저를 통해 로컬 컴퓨터로부터 쥬피터 노트북이 설치되어 있는 EC2 서버에 접속하기 위한 작업을 수행한다.
+이를 위해서 인증서를 생성한다.
+
+`jupyter notebook --generate-config` 명령어를 통해서 환경설정 파일을 생성시킨다.
+`.jupyter/jupyter_notebook_config.py` 파일이 생성되고 나중에 다수 환경설정 내용을 담아낸다.
+
+``` {r download-anaconda-ubuntu-config, eval=FALSE}
+$ jupyter notebook --generate-config
+```
+
+`certs` 디렉토리를 생성하고 나서 인증서를 생성한다.
+인증서명은 임의로 작성한다. `newcert.pem`도 좋고 `mycert.pem`도 좋다.
+공백으로 관련 내용을 채우려면 `.`을 입력한다.
+
+``` {r download-anaconda-ubuntu-certificate, eval=FALSE}
+$ mkdir certs
+$ cd certs
+$ sudo openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout newcert.pem -out newcert.pem
+Generating a 1024 bit RSA private key
+.......++++++
+.....................++++++
+writing new private key to 'newcert.pem'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:KR
+State or Province Name (full name) [Some-State]:.
+Locality Name (eg, city) []:.
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:.
+Organizational Unit Name (eg, section) []:.
+Common Name (e.g. server FQDN or YOUR name) []:.
+Email Address []:.
+$ ls
+newcert.pem
+```
+
+## 쥬피터 환경설정 파일 편집  {#spark-pyspark-jupyter-notebook-edit-config}
+
+`.jupyter/jupyter_notebook_config.py` 파일에 앞에서 설정한 내용을 담아낸다.
+
+``` {r download-anaconda-ubuntu-edit-config, eval=FALSE}
+$ nano .jupyter/jupyter_notebook_config.py
+```
+
+`.jupyter/jupyter_notebook_config.py` 파일에 나노 편집기로 다음 사항을 복사하여 붙여넣고 
+필요한 사항을 반영시킨다.
+
+``` {r download-anaconda-ubuntu-edit-nano, eval=FALSE}
+c = get_config()
+
+# Kernel config
+c.IPKernelApp.pylab = 'inline'  # 노트북에 플롯 시각화 기능 지원
+
+# Notebook config
+c.NotebookApp.certfile = u'/home/ubuntu/certs/mycert.pem' # 인증서 위치
+c.NotebookApp.ip = '*' # IP 주소 - 필요한 경우 특정 IP를 지정한다.
+c.NotebookApp.open_browser = False  #기본설정으로 브라우저가 뜨는 것을 방지
+c.NotebookApp.password = u'sha1:262....your hash here.........65f'  # 앞서 생성시킨 SHA 해쉬값을 복사해 넣는다.
+c.NotebookApp.port = 8888 # AWS EC2에서 지정한 인바운드 포트 번호와 맞춤
+```
+
+## 쥬피터 노트북 실행  {#spark-pyspark-jupyter-notebook-run}
+
+`jupyter notebook` 명령어를 실행시키면 접속 퍼블릭 IP 주소를 통해 포트번호 8888을 통해 쥬피터 노트북이 설치된 
+EC2서버에 웹브라우저를 통해 접속이 가능하다. 개인정보 보호 오류와 같은 메시지가 뜨는 경우 하단의 파란색 박스 링크를 과감히 클릭하고 이동한다.
+그러면 SHA 해쉬로 설정한 비밀번호를 입력시키도록 하는 인증화면이 뜨고 비번을 넣어 인증과정을 마치게 되면 드디어 쥬피터 노트북을 사용할 수 있게 된다.
+
+``` {r download-anaconda-ubuntu-edit-run, eval=FALSE}
+$ jupyter notebook
+[I 05:42:00.573 NotebookApp] JupyterLab extension loaded from /home/ubuntu/anaconda3/lib/python3.7/site-packages/jupyterlab
+[I 05:42:00.573 NotebookApp] JupyterLab application directory is /home/ubuntu/anaconda3/share/jupyter/lab
+[I 05:42:00.575 NotebookApp] Serving notebooks from local directory: /home/ubuntu/Notebooks
+[I 05:42:00.575 NotebookApp] The Jupyter Notebook is running at:
+[I 05:42:00.575 NotebookApp] https://xxx.xx.xx.xxx:8888/
+[I 05:42:00.575 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+```
+
+AWS EC2 인스턴스에 인터넷 웹브라우저를 통해 접속할 때 인증서를 사용해서 접근하도록 안내하는 화면이 출력된다.
+
+<img src="fig/aws-ec-juypter-certificate.png" alt="인증서" width="77%" /> 
+
+SHA 해쉬로 설정한 비밀번호를 입력하여 쥬피터 노트북에 접속하여 작업을 열어준다.
+
+<img src="fig/aws-ec-juypter-login.png" alt="인증서" width="77%" /> 
+
+드디어 작업할 환경이 설정되어 데이터 분석 및 모형개발 작업을 수행할 수 있게 되었다.
+
+<img src="fig/aws-ec-juypter-notebook.png" alt="인증서" width="77%" /> 
