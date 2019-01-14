@@ -26,6 +26,7 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
                     comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 ```
 
+
 # S3 버킷 데이터 읽어오기 {#pyspark-read-s3-data-csv}
 
 S3 데이터는 `.csv`, `.xlsx` 등 친숙한 파일 형태로 있을 수 있지만, 빅데이터를 효과적으로 저장하기 위해서 `.parquet` 형태로 저장되어 있기도하다. 이를 불러들여 처리하기 위해서 두가지 조합이 필요하고 데이터 사이언스 언어(R/파이썬)에 따라 두가지 조합이 추가로 필요하다.
@@ -33,7 +34,7 @@ S3 데이터는 `.csv`, `.xlsx` 등 친숙한 파일 형태로 있을 수 있지
 - S3 `.csv`: EC2 인스턴스 파이썬 판다스, RStudio 서버
 - S3 `.parquet`: 스파크 클러스터 `pyspark`, RStudio `sparklyr`
 
-<img src="fig/ec2-import-s3-data.png" alt="S3 데이터 읽어오기" width="100% />
+<img src="fig/ec2-import-s3-data.png" alt="스파크 쥬피터 노트북" width="100%" />
 
 # S3 `.csv` 파이썬 판다스 {#pyspark-read-s3-data}
 
