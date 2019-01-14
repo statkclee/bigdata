@@ -1,0 +1,145 @@
+---
+layout: page
+title: 빅데이터 
+subtitle: "데이터 읽어오기"
+author:
+    name: xwMOOC
+    url: https://www.facebook.com/groups/tidyverse/
+    affiliation: Tidyverse Korea
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+
+``` {r, include=FALSE}
+# source("tools/chunk-options.R")
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
+                    comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+```
+
+# S3 버킷 데이터 읽어오기 {#pyspark-read-s3-data-csv}
+
+S3 데이터는 `.csv`, `.xlsx` 등 친숙한 파일 형태로 있을 수 있지만, 빅데이터를 효과적으로 저장하기 위해서 `.parquet` 형태로 저장되어 있기도하다. 이를 불러들여 처리하기 위해서 두가지 조합이 필요하고 데이터 사이언스 언어(R/파이썬)에 따라 두가지 조합이 추가로 필요하다.
+
+- S3 `.csv`: EC2 인스턴스 파이썬 판다스, RStudio 서버
+- S3 `.parquet`: 스파크 클러스터 `pyspark`, RStudio `sparklyr`
+
+<img src="fig/ec2-import-s3-data.png" alt="S3 데이터 읽어오기" width="100% />
+
+# S3 `.csv` 파이썬 판다스 {#pyspark-read-s3-data}
+
+먼저 S3 버킷 `.csv` 데이터를 파이썬 판다스로 불러오는 사례를 살펴보자.
+S3 EC2 인스턴스에서 AWS S3 버킷 데이터를 읽어들이기 위해서 쥬피터 노트북으로 접속을 한다.
+아나콘다3가 설치된 상태에서 `pip install smart_open` 팩키지를 설치하고 나서 
+S3 버킷에 접근 권한이 있는 `aws_key`, `aws_secret` 설정값과 함께 
+버킷명과 파일위치를 지정하여 `pd.read_csv()` 메쏘드를 통해서 데이터를 판다스 데이터프레임으로 가져온다.
+
+- `s3fs`
+- `boto` 혹은 `boto3`
+- `smart_open`
+
+``` {r read-s3-data, eval=FALSE}
+import pandas as pd
+from smart_open import smart_open
+
+aws_key = 'AKIAxxxxx'
+aws_secret = 'VNdBVtxxxxx'
+
+bucket_name = 'victor-seoul'
+file_name = 'million_song/YearPredictionMSD.txt'
+
+path = 's3://{}:{}@{}/{}'.format(aws_key, aws_secret, bucket_name, file_name)
+
+df = pd.read_csv(smart_open(path), header=None)
+
+df.head()
+
+0 1 2 3 4 5 6 7 8 9 ... 81  82  83  84  85  86  87  88  89  90
+0 2001  49.94357  21.47114  73.07750  8.74861 -17.40628 -13.09905 -25.01202 -12.23257 7.83089 ... 13.01620  -54.40548 58.99367  15.37344  1.11144 -23.08793 68.40795  -1.82223  -27.46348 2.26327
+1 2001  48.73215  18.42930  70.32679  12.94636  -10.32437 -24.83777 8.76630 -0.92019  18.76548  ... 5.66812 -19.68073 33.04964  42.87836  -9.90378  -32.22788 70.49388  12.04941  58.43453  26.92061
+2 2001  50.95714  31.85602  55.81851  13.41693  -6.57898  -18.54940 -3.27872  -2.35035  16.07017  ... 3.03800 26.05866  -50.92779 10.93792  -0.07568  43.20130  -115.00698  -0.05859  39.67068  -0.66345
+3 2001  48.24750  -1.89837  36.29772  2.58776 0.97170 -26.21683 5.05097 -10.34124 3.55005 ... 34.57337  -171.70734  -16.96705 -46.67617 -12.51516 82.58061  -72.08993 9.90558 199.62971 18.85382
+4 2001  50.97020  42.20998  67.09964  8.46791 -15.85279 -16.81409 -12.48207 -9.37636  12.63699  ... 9.92661 -55.95724 64.92712  -17.72522 -1.49237  -7.50035  51.76631  7.88713 55.66926  28.74903
+```
+
+
+# S3 버킷 `.parquet` &rarr; 판다스 [^read-parquet-pandas] {#pyspark-read-s3-parquet-pandas} 
+
+[^read-parquet-pandas]: [Reading and Writing the Apache Parquet Format](https://arrow.apache.org/docs/python/parquet.html)
+
+`.parquet` 파일을 읽어오기 위해서 `pyarrow` 팩키지를 사용한다. 먼저 판다스 데이터프레임을 생성하고 이를 `pyarrow` 객체로 변환시킨다.
+
+## `.parquet` 파일 생성 {#pyspark-read-s3-parquet-pandas-create}
+
+먼저 판다스 데이터프레임을 생성시킨다. 
+`pd.DataFrame()` 메쏘드를 사용해서 데이터프레임을 생성하고 판다스 데이터프레임을 불러읽어 `.parquet` 객체를 생성한다.
+
+```{r make-parquet-file, eval=FALSE}
+import pandas as pd
+import numpy as np
+import pyarrow as pa
+import pyarrow.parquet as pq
+from smart_open import smart_open
+
+py_df = pd.DataFrame({'one': [-1, np.nan, 2.5],
+                      'two': ['foo', 'bar', 'baz'],
+                      'three': [True, False, True]},
+                       index=list('abc'))
+
+table = pa.Table.from_pandas(py_df)
+
+table.to_pandas().head()
+
+	one	two	three
+a	-1.0	foo	True
+b	NaN	bar	False
+c	2.5	baz	True
+```
+
+`.parquet` 파일로 로컬 컴퓨터에 저장을 시키고 나아가 S3 버킷에 저장을 시킨다.
+`pq.write_table(table, 'example.parquet')` 명령어로 앞서 생성한 파케이 객체를 `example.parquet` 파일로 저장시킨다. 그리고 나서 `/home/ubuntu/notebooks` 디렉토리 
+`example.parquet` 파일이 생성된 것을 확인한다.
+
+```{r write-parquet-file, eval=FALSE}
+pq.write_table(table, 'example.parquet')
+import os
+print(os.getcwd())
+/home/ubuntu/notebooks
+! ls -al
+total 36
+drwxrwxr-x  3 ubuntu ubuntu  4096 Jan 14 05:41 .
+drwxr-xr-x 15 ubuntu ubuntu  4096 Jan 14 01:37 ..
+-rw-rw-r--  1 ubuntu ubuntu  1447 Jan 11 08:04 01_hello-spark.ipynb
+-rw-rw-r--  1 ubuntu ubuntu 12324 Jan 14 05:41 02_access-s3.ipynb
+-rw-rw-r--  1 ubuntu ubuntu  1559 Jan 14 05:41 example.parquet
+drwxrwxr-x  2 ubuntu ubuntu  4096 Jan 14 05:29 .ipynb_checkpoints
+```
+
+## `.parquet` 파일 불러오기 {#pyspark-read-s3-parquet-pandas-read}
+
+앞서 생성시킨 로컬 EC2 인스턴스에 저장된 `.parquet` 파일을 불러온다.
+`pq.read_table()` 메쏘드를 통해 파케이 파일을 불러온다.
+
+```{r read-local-parquet-file, eval=FALSE}
+example_pq = pq.read_table('example.parquet')
+example_pq.to_pandas()
+
+one	two	three
+a	-1.0	foo	True
+b	NaN	bar	False
+c	2.5	baz	True
+```
+
+# S3 `.parquet` 파이스파크(pyspark) {#pyspark-read-s3-data-pyspark}
+
+
+
