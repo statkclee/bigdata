@@ -207,7 +207,6 @@ C:\Users\tidyverse> ftype py_auto_file="C:\Anaconda\python.exe" "%1" %*
 py_auto_file="C:\Anaconda\python.exe" "%1" %*
 ```
 
-
 </div>
 
 
@@ -251,6 +250,25 @@ AWS CIL로 자주 사용하는 명령어는 다음과 같다.
 | 특정 파일명 삭제    | aws s3 rm s3://dorothypaper/theswice/ --recursive --exclude "dorothypaper/*.sql" |
 | 폴더 삭제           | aws s3 rm s3://dorothypaper/theswice/folder --recursive |
 | 파일 삭제           | aws s3 rm s3://dorothypaper/theswice/file1.tar |
+
+# AWS S3 파일 업로드 {#million-song-s3-upload}
+
+AWS에서 스파크 데이터 분석을 위해서 먼저 S3에 데이터를 준비해야 한다. 
+로컬 컴퓨터에서 AWS S3로 데이터를 전송하는 방식은 AWS CLI (`aws-shell`)을 이용한 방법과 
+GUI로 [S3 브라우져 프로그램](http://s3browser.com/)을 사용하는 방식이 존재한다.
+
+## GUI - S3 브라우져 프로그램 {#million-song-s3-upload-gui}
+
+로컬 컴퓨터에서 FTP 프로그램 중 AWS S3 데이터 송수신을 위해 개발된 [S3 브라우져 프로그램](http://s3browser.com/)을 사용해서 데이터를 올리는 방식은 다음과 같다.
+S3 버킷에 파일을 올리기 위해서 다음 두가지 단계를 거쳐 작업을 진행한다.
+
+1. `Accounts` &rarr; `Storage Accounts` &rarr; `Edit Account` 로 이동한다.
+1. `Access Key ID`, `Secret Access Key` 를 설정한다.
+1. 로컬 PC `YearPredictionMSD.txt` 파일을 S3 버킷으로 올린다.
+
+<img src="fig/s3-browser-upload.png" alt="백만송 S3 업로드" width="77%" />
+
+## CLI - AWS CLI  {#million-song-s3-upload-cli}
 
 `iris.csv` 파일을 `s3 cp` 명령어를 통해서 `tidyverse-seoul` 버킷 `football` 디렉토리에 복사하고 이를 `s3 ls` 명령어로 확인한다.
 

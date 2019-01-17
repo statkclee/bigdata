@@ -26,27 +26,6 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
                     comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 ```
 
-# AWS S3 파일 업로드 {#million-song-s3-upload}
-
-AWS에서 스파크 데이터 분석을 위해서 먼저 S3에 데이터를 준비해야 한다. 
-로컬 컴퓨터에서 AWS S3로 데이터를 전송하는 방식은 AWS CLI (`aws-shell`)을 이용한 방법과 
-GUI로 [S3 브라우져 프로그램](http://s3browser.com/)을 사용하는 방식이 존재한다.
-
-## GUI - S3 브라우져 프로그램 {#million-song-s3-upload-gui}
-
-로컬 컴퓨터에서 FTP 프로그램 중 AWS S3 데이터 송수신을 위해 개발된 [S3 브라우져 프로그램](http://s3browser.com/)을 사용해서 데이터를 올리는 방식은 다음과 같다.
-S3 버킷에 파일을 올리기 위해서 다음 두가지 단계를 거쳐 작업을 진행한다.
-
-1. `Accounts` &rarr; `Storage Accounts` &rarr; `Edit Account` 로 이동한다.
-1. `Access Key ID`, `Secret Access Key` 를 설정한다.
-1. 로컬 PC `YearPredictionMSD.txt` 파일을 S3 버킷으로 올린다.
-
-<img src="fig/s3-browser-upload.png" alt="백만송 S3 업로드" width="77%" />
-
-## CLI - AWS CLI  {#million-song-s3-upload-cli}
-
-[AWS CLI 헬로 월드](bigdata-pyspark-prerequisite.html#5_aws_cli_%ED%97%AC%EB%A1%9C_%EC%9B%94%EB%93%9C)를 참고한다.
-
 # S3 버킷 데이터 읽어오기 {#pyspark-read-s3-data-csv}
 
 S3 데이터는 `.csv`, `.xlsx` 등 친숙한 파일 형태로 있을 수 있지만, 빅데이터를 효과적으로 저장하기 위해서 `.parquet` 형태로 저장되어 있기도하다. 이를 불러들여 처리하기 위해서 두가지 조합이 필요하고 데이터 사이언스 언어(R/파이썬)에 따라 두가지 조합이 추가로 필요하다.
