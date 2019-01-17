@@ -14,17 +14,17 @@ title: 빅데이터
 ## 학습목차 
 
 - [빅데이터 스파크(Spark)](bigdata-spark-mooc.html)
-    + [단독형 스파크 설치 - PC/노트북, EC2 원격 컴퓨터](ds-sparklyr.html) 
-    + [Spark와 연결하는 `sparklyr`, `dplyr`, 그리고 기계학습](ml-sparklyr.html)
-- [빅데이터 들어가며 - 기본기](bigdata-pyspark-prerequisite.html)
-- [파이-스파크(`pyspark`)](bigdata-pyspark.html)
-    + **데이터 읽어오기**
-        + [데이터(S3) 읽어오기 - 파이썬](bigdata-pyspark-read-data.html)
-        + [데이터(S3) 읽어오기 - R](bigdata-sparklyr-read-data.html)
-    + [자료 구조](bigdata-pyspark-data-structure.html)
-    + [자료 변환](bigdata-pyspark-data-transformation.html)
-    + [데이터프레임과 SQL](bigdata-pyspark-dataframe-sql.html)
-    + [기계학습 예측모형](bigdata-pyspark-predictive-model.html) (TBA)
+    + [빅데이터 들어가며 - 기본기](bigdata-pyspark-prerequisite.html)
+    + 파이-스파크(`pyspark`)
+        * [데이터(S3) 읽어오기 - 파이썬](bigdata-pyspark-read-data.html)            
+        * [자료 구조](bigdata-pyspark-data-structure.html)
+        * [자료 변환](bigdata-pyspark-data-transformation.html)
+        * [데이터프레임과 SQL](bigdata-pyspark-dataframe-sql.html)
+        * [기계학습 예측모형](bigdata-pyspark-predictive-model.html) (TBA)
+    + RStudio 스파크 - `sparklyr`
+        * [단독형 스파크 설치 - PC/노트북, EC2 원격 컴퓨터](ds-sparklyr.html) 
+        * [데이터(S3) 읽어오기 - R](bigdata-sparklyr-read-data.html)        
+        * [Spark와 연결하는 `sparklyr`, `dplyr`, 그리고 기계학습](ml-sparklyr.html)
 - [$H_2 O$ 기계학습](h20-arch.html)
     + [$H_2 O$ 하둡 스파크 클러스터 설치](ds-h2o-spark-hadoop.html)    
     + [$H_2 O$ R 연습문제](h2o-r-exercise.html)
