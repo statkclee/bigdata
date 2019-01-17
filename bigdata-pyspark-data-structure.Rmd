@@ -26,66 +26,6 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
                     comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 ```
 
-# 쥬피터 노트북 {#jupyter-notebook-configure}
-
-쥬피터 노트북으로 작업하는 경우 두가지가 마음에 걸린다. 첫번째는 작업 디렉토리 설정이고 그 다음으로 한글폰트 설정이다.
-
-## 작업 디렉토리 설정 [^jupyter-notebook-working-directory] {#jupyter-notebook-directory}
-
-[^jupyter-notebook-working-directory]: [path - 주피터 노트북 테마 - Jupyter 시작 폴더를 변경하는 방법](https://code.i-harness.com/ko-kr/q/219f244)
-
-스파크 클러스터에 접근라는데 개발환경을 쥬피터 노트북으로 설정하고 작업 디렉토리를 설정한다.
-이를 위해서 `cmd` (또는 Anaconda Prompt )를 열고 `jupyter notebook --generate-config` 실행하여 
-`jupyter_notebook_config.py` 파일을 생성하고 디렉토리 환경설정부분을 다음과 같이 텍스트 편집기를 열어
-변경시킨다.
-
-
-<div class = "row">
-  <div class = "col-md-6">
-**`jupyter_notebook_config.py` 변경전**
-
-``` {r jupyter-notebook-before, eval=FALSE}
-#c.NotebookApp.notebook_dir = ''
-```
-
-  </div>
-  <div class = "col-md-6">
-**`jupyter_notebook_config.py` 변경후**
-
-``` {r jupyter-notebook-after, eval=FALSE}
-## The directory to use for notebooks and kernels.
-# c.NotebookApp.notebook_dir = '/the/path/to/home/folder/'
-c.NotebookApp.notebook_dir = 'D:\\tidyverse\\bigdata\\code'
-```
-
-  </div>
-</div>
-
-## 한글 폰트 설정 [^hangul-font-setup] {#jupyter-notebook-directory-hangul}
-
-[^hangul-font-setup]: [frhyme.code, "jupyter notebook 커스토마이징하기"](https://frhyme.github.io/python-lib/jupyter_notebook_font_change/)
-
-쥬피터 노트북을 설치하면 `C:\Users\<사용자ID>\.jupyter`가 생성된다. 여기에 `custom.css` 파일을 생성시키고 적용하고자하는 폰트를 설정하면 된다.
-
-1. 윈도우 탐색기를 연다.
-1. `C:\Users\<사용자ID>\.jupyter` 디렉토리로 이동한다.
-1. `custom` 디렉토리를 생성한다.
-1. `custom.css` 파일을 생성한다.
-1. 다음 내용을 `custom.css` 파일에 적어 저장시킨다.
-
-`D2Coding` 폰트를 사전에 다운로드 받아 설치하고 나서 윈도우 시스템에 설치된 `D2Coding` 폰트를 쥬피터 노트북에 적용시키는 개념이다.
-
-``` {r custom-css, eval=FALSE}
-.CodeMirror pre {font-family: D2Coding; font-size: 12pt; line-height: 140%;}
-.container { width:100% !important; }
-div.output pre{
-    font-family: D2Coding;
-    font-size: 12pt;
-}
-```
-
-<img src="fig/pyspark-jupyter-font.png" alt="쥬피터 노트북 폰트 설정" width="100%" />
-
 
 # 스파크 클러스터 접속 {#sparkcontext-connect}
 

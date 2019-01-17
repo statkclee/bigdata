@@ -16,6 +16,7 @@ title: 빅데이터
 - [빅데이터 스파크(Spark)](bigdata-spark-mooc.html)
     + [단독형 스파크 설치 - PC/노트북, EC2 원격 컴퓨터](ds-sparklyr.html) 
     + [Spark와 연결하는 `sparklyr`, `dplyr`, 그리고 기계학습](ml-sparklyr.html)
+- [빅데이터 들어가며 - 기본기](bigdata-pyspark-prerequisite.html)
 - [파이-스파크(`pyspark`)](bigdata-pyspark.html)
     + **데이터 읽어오기**
         + [데이터(S3) 읽어오기 - 파이썬](bigdata-pyspark-read-data.html)
