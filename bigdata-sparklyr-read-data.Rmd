@@ -26,206 +26,30 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
                     comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 ```
 
-# 윈도우 환경 AWS CLI  {#windows-aws-cli}
+# AWS S3 파일 업로드 {#million-song-s3-upload}
 
-## 윈도우 비트 확인 [^hp-windows-bit] {#windows-aws-cli-bit}
+AWS에서 스파크 데이터 분석을 위해서 먼저 S3에 데이터를 준비해야 한다. 
+로컬 컴퓨터에서 AWS S3로 데이터를 전송하는 방식은 AWS CLI (`aws-shell`)을 이용한 방법과 
+GUI로 [S3 브라우져 프로그램](http://s3browser.com/)을 사용하는 방식이 존재한다.
 
-[^hp-windows-bit]: [HP PC - 내 컴퓨터의 Windows 버전이 32비트입니까 또는 64비트입니까?](https://support.hp.com/kr-ko/document/c02020927)
+## GUI - S3 브라우져 프로그램 {#million-song-s3-upload-gui}
 
-AWS에 접근하는 로컬 컴퓨터 운영체제가 윈도우의 경우 Microsoft Windows에 AWS Command Line Interface 설치](https://docs.aws.amazon.com/ko_kr/cli/latest/userguide/install-windows.html)에 
-따라서 AWS CLI를 설치할 경우 가장 먼저 "Windows용 AWS CLI MSI 설치 관리자"를 다운로드 받아야 하는데 64비트와 32비트가 있다.
+로컬 컴퓨터에서 FTP 프로그램 중 AWS S3 데이터 송수신을 위해 개발된 [S3 브라우져 프로그램](http://s3browser.com/)을 사용해서 데이터를 올리는 방식은 다음과 같다.
+S3 버킷에 파일을 올리기 위해서 다음 두가지 단계를 거쳐 작업을 진행한다.
 
-1. 윈도우 탐색기를 연다.
-1. 좌측 메뉴 `컴퓨터`에 마우스 포인터를 위치시키고 우클릭한다.
-1. 메뉴에서 "속성"을 클릭한다.
-1. `컴퓨터에 대한 기본 정보 보기` &rarr; `시스템` &rarr; `시스템 종류: 64비트 운영 체제` 
+1. `Accounts` &rarr; `Storage Accounts` &rarr; `Edit Account` 로 이동한다.
+1. `Access Key ID`, `Secret Access Key` 를 설정한다.
+1. 로컬 PC `YearPredictionMSD.txt` 파일을 S3 버킷으로 올린다.
 
-혹은 윈도우 탐색기 상단 주소창에 "제어판\모든 제어판 항목\시스템"을 복사하여 붙여넣으면 `제어판 홈`에서 확인이 가능하다.
+<img src="fig/s3-browser-upload.png" alt="백만송 S3 업로드" width="77%" />
 
-## AWS CLI 설치 {#windows-aws-cli-install}
+## CLI - AWS CLI  {#million-song-s3-upload-cli}
 
-운영체제에 맞춰 64비트 혹은 32비트 Windows용 AWS CLI MSI 설치 관리자를 다운로드 받는다.
-[Windows용 AWS CLI MSI 설치 관리자(64비트) 다운로드](https://s3.amazonaws.com/aws-cli/AWSCLI64PY3.msi)받아 설치작업을 한다.
-
-CLI는 기본적으로 `C:\Program Files\Amazon\AWSCLI`(64비트 버전) 또는 `C:\Program Files (x86)\Amazon\AWSCLI` (32비트 버전) 디렉토리에 설치됩니다.
-
-## AWS CLI 설치 환경변수 추가 {#windows-aws-cli-install-path}
-
-AWS CLI를 설치하게 되면 `C:\Program Files\Amazon\AWSCLI`(64비트 버전) 또는 `C:\Program Files (x86)\Amazon\AWSCLI` (32비트 버전) 디렉토리에 실행파일이 위치하게 된다.
-쉘에서 AWS CLI를 바로 불러 사용할 수 있도록 등록을 해줘야 한다.
-이를 환경변수 설정 작업이라고 한다.
-
-- MSI 설치 관리자(64비트) – C:\Program Files\Amazon\AWSCLI
-- MSI 설치 관리자(32비트) – C:\Program Files (x86)\Amazon\AWSCLI
-
-AWS CLI가 설치된 디렉토리가 확인되면 다음으로 환경변수 등록작업을 한다.
-
-1. 윈도우 키(⊞) 를 누르고 "environment variables"을 타이핑한다.
-1. 환경변수 창이 뜨는 것을 확인한다.
-1. `<유저명>에 대한 사용자 변수(U)`를 확인한다.
-1. `변수`에서 **Path**를 선택하고 `편집(E)...`을 클릭한다.
-1. 세미콜론으로 구분된 맨 마지막에 "세미콜론"으로 구분되게 64비트의 경우 `C:\Program Files\Amazon\AWSCLI` 경로명을 추가한다.
-1. `확인`을 누루고 빠져나온다.
-
-## AWS CLI 설치 확인 {#windows-aws-cli-install-path-confirm}
-
-AWS CLI 설치 작업과 `cmd` 쉘에서 불러 사용할 수 있도록 환경설정 작업이 완료되면 
-제대로 설치되어 활용이 가능한지 `cmd` 쉘에서 확인 과정을 거친다.
-
-키보드 윈도우 키(⊞) +  `R` 누르면 실행창이 뜨고 `cmd` 를 타이핑하면 윈도우 쉘 터미널이 실행된다.
-
-현재 컴퓨터 사용자명이 `tidyverse`로 가정하고 `where aws` 명령어로 AWS CLI 가 위치한 곳을 확인하고 
-`aws --version` 명령어를 통해 정상 설치되었는지 확인한다.
-
-``` {r aws-cli-tidyverse-windows, eval=FALSE}
-Microsoft Windows [Version 6.1.7601]
-Copyright (c) 2009 Microsoft Corporation. All rights reserved.
-
-C:\Users\tidyverse> aws --version
-aws-cli/1.16.90 Python/3.6.0 Windows/7 botocore/1.12.80
-
-C:\Users\tidyverse> where aws
-C:\Program Files\Amazon\AWSCLI\bin\aws.cmd
-```
-
-# 윈도우 환경 `aws-shell` [^aws-shell]  {#windows-aws-cli-shell-aws}
-
-[^aws-shell]: [An integrated shell for working with the AWS CLI.](https://github.com/awslabs/aws-shell)
-
-[aws-shell][https://github.com/awslabs/aws-shell]을 설치하여 AWS CLI를 쉽고 편하게 사용할 수 있도록 작업한다.
-
-`pip install aws-shell` 명령어를 통해서 `aws-shell`을 설치한다.
-
-``` {r aws-cli-tidyverse, eval=FALSE}
-C:\Users\tidyverse> pip install aws-shell
-```
-
-# AWS 키관리  {#windows-aws-cli-key}
-
-AWS CLI를 설치하고 나서 처음 해야 할 일은 `Access Key` 및 `Secret Access Key` 그리고 기본 `리전` 및 `출력 결과`를 설정하는 것입니다. 
-이유는 `Access Key` 및 `Secret Access Key` 정보만 있으면 누구나 AWS 클라우드 자원을 마음먹은대로 사용할 수 있기 때문이다.
-
-
-- AWS Access Key ID [****************BDKA]:
-- AWS Secret Access Key [****************zn8W]:
-- Default region name [ap-northeast-2]:
-- Default output format [None]:
-
-`cmd` 윈도우 쉘에서 `aws configure` 명령어로 AWS `IAM`을 발급한 `AWS Access Key ID`,
-`AWS Secret Access Key`를 설정하여 반영시킨다.
-`configure list` 명령어를 통해 설정내용을 확인한다.
-
-
-``` {r aws-cli-tidyverse-key, eval=FALSE}
-aws> configure
-AWS Access Key ID [****************BDKA]: XXXXXXXXXXXXXXXXXXXX6HOQ
-AWS Secret Access Key [****************zn8W]: XXXXXXXXXXXXXXXXXXXXXXXXXhTEf
-Default region name [ap-northeast-2]: ap-northeast-2
-Default output format [None]: JSON
-
-aws> configure list
-      Name                    Value             Type    Location
-      ----                    -----             ----    --------
-   profile                <not set>             None    None
-access_key     ****************6HOQ shared-credentials-file
-secret_key     ****************hTEf shared-credentials-file
-    region           ap-northeast-2      config-file    ~/.aws/config
-```
-
-<style>
-div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
-</style>
-<div class = "blue">
-
-**Error: File association not found for extension .py** <br>
-**확장명 .py에 대한 파일 연결이 없습니다.** [^file-extension-error]
-
-[^file-extension-error]: [secretweaponsdigital, "Error: File association not found for extension .py"](https://secretweaponsdigital.wordpress.com/2015/07/23/error-file-association-not-found-for-extension-py/)
-
-1. `cmd` 윈도우 터미널에서 `where python` 명령어로 파이썬 실행경로를 확인한다.
-    - 단,  `cmd` 윈도우 터미널을 관리자 권한으로 연다.
-1. 다음 명령어를 순서대로 타이핑한다.
-
-``` {r python-extension-error, eval=FALSE}
-C:\Users\tidyverse>where python
-C:\ProgramData\Anaconda3\python.exe
-C:\Python34\python.exe
-
-C:\Users\tidyverse> assoc .py=py_auto_file
-.py=py_auto_file
-
-C:\Users\tidyverse> ftype py_auto_file="C:\Anaconda\python.exe" "%1" %*
-py_auto_file="C:\Anaconda\python.exe" "%1" %*
-```
-
-
-</div>
-
-
-# AWS CLI 헬로 월드 {#windows-aws-cli-hello-world}
-
-AWS S3 버킷에 담긴 데이터를 AWS CLI를 통해 확인하여 처음으로 헬로월드를 찍어본다.
-`aws-shell`을 타이핑하여 `aws>`로 프롬프트를 바꾼 후에 `s3 ls` 명령어로 
-AWS S3 버킷 `tidyverse-seoul`에 포함된 디렉토리를 파악한다.
-
-``` {r aws-cli-tidyverse-key-hello-world, eval=FALSE}
-C:\Users\tidyverse> aws-shell
-aws> s3 ls s3://tidyverse-seoul
-                           PRE football/
-                           PRE million_song/
-                           PRE parquet/
-                           PRE scripts/
-aws> s3 ls s3://tidyverse-seoul/million_song/
-2019-01-10 11:05:47          0 million_song/
-2019-01-10 11:06:07  448576698 million_song/YearPredictionMSD.txt                           
-```
-
-"`Ctrl` + D"를 입력하면 `aws>` CLI를 빠져나올 수 있다.
-
-## 자주 쓰는 AWS CLI [^aws-cli-cmd] {#windows-aws-cli-hello-world-command}
-
-[^aws-cli-cmd]: [THESWICE, "S3"](https://m.blog.naver.com/PostView.nhn?blogId=theswice&logNo=220773070430&proxyReferer=https%3A%2F%2Fwww.google.com%2F)
-
-AWS CIL로 자주 사용하는 명령어는 다음과 같다.
-
-|  CLI 명령어         |      AWS S3 명령어    |
-|---------------------|---------------------------------------|
-| 폴더 검색           | aws s3 ls s3://dorothypaper/theswice/ |
-| 파일 검색           | aws s3 ls s3://dorothypaper/theswice/file1.tar |
-| 파일 다운로드(복사) | aws s3 cp s3://dorothypaper/theswice/file1.tar /data/theswice/ |
-| 파일 업로드(복사)   | aws s3 cp /data/theswice/file1.tar  s3://dorothypaper/theswice/ |
-| 파일 다운로드(이동) | aws s3 mv s3://dorothypaper/theswice/file1.tar /data/theswice/ |
-| 파일 업로드(이동)   | aws s3 cp /data/theswice/file1.tar  s3://dorothypaper/theswice/ |
-| 버킷 내 파일 복사   | aws s3 cp s3://dorothypaper/theswice/file1.tar   s3://dorothypaper/kimgn/file1.tar |
-| 버킷 내 파일 이동   | aws s3 mv s3://dorothypaper/theswice/file1.tar   s3://dorothypaper/kimgn/file1.tar |
-| 다수 파일 복사      | aws s3 cp /data/theswice/folder s3://dorothypaper/theswice/ --recursive |
-| 폴더 복사           | aws s3 cp /data/theswice/folder s3://dorothypaper/theswice/folder --recursive |
-| 특정 파일명 삭제    | aws s3 rm s3://dorothypaper/theswice/ --recursive --exclude "dorothypaper/*.sql" |
-| 폴더 삭제           | aws s3 rm s3://dorothypaper/theswice/folder --recursive |
-| 파일 삭제           | aws s3 rm s3://dorothypaper/theswice/file1.tar |
-
-`iris.csv` 파일을 `s3 cp` 명령어를 통해서 `tidyverse-seoul` 버킷 `football` 디렉토리에 복사하고 이를 `s3 ls` 명령어로 확인한다.
-
-``` {r aws-cli-tidyverse-key-hello-world-cp, eval=FALSE}
-C:\Users\tidyverse> ls
-iris.csv
-C:\Users\tidyverse> aws-shell
-aws> s3 cp iris.csv s3://tidyverse-seoul/football/
-upload: .\iris.csv to s3://tidyverse-seoul/football/iris.csv
-aws> s3 ls s3://tidyverse-seoul/football/
-2018-11-09 17:23:29          0
-2018-11-09 17:39:00       5703 anyang_2018-11-09_df.csv
-2018-11-13 15:58:08       3102 anyang_2018-11-13_06:58:07_df.csv
-2018-11-13 15:59:04       3102 anyang_2018-11-13_06:59:03_df.csv
-2018-11-13 16:00:04       3102 anyang_2018-11-13_07:00:03_df.csv
-2018-11-09 17:32:52       5703 anyang_df.csv
-2019-01-17 14:47:17       3975 iris.csv
-```
+[AWS CLI 헬로 월드](bigdata-pyspark-prerequisite.html#5_aws_cli_%ED%97%AC%EB%A1%9C_%EC%9B%94%EB%93%9C)를 참고한다.
 
 # S3 버킷 데이터 읽어오기 {#pyspark-read-s3-data-csv}
 
-S3 데이터는 `.csv`, `.xlsx` 등 친숙한 파일 형태로 있을 수 있지만, 빅데이터를 효과적으로 저장하기 위해서 `.parquet` 형태로 저장되어 있기도하다. 
-이를 불러들여 처리하기 위해서 두가지 조합이 필요하고 데이터 사이언스 언어(R/파이썬)에 따라 두가지 조합이 추가로 필요하다.
+S3 데이터는 `.csv`, `.xlsx` 등 친숙한 파일 형태로 있을 수 있지만, 빅데이터를 효과적으로 저장하기 위해서 `.parquet` 형태로 저장되어 있기도하다. 이를 불러들여 처리하기 위해서 두가지 조합이 필요하고 데이터 사이언스 언어(R/파이썬)에 따라 두가지 조합이 추가로 필요하다.
 
 - S3 `.csv`: EC2 인스턴스 파이썬 판다스, **RStudio 서버**
 - S3 `.parquet`: 스파크 클러스터 `pyspark`, **RStudio `sparklyr`**
@@ -246,89 +70,119 @@ S3 데이터는 `.csv`, `.xlsx` 등 친숙한 파일 형태로 있을 수 있지
     - **EC2 스파크 클러스터 RStudio - `sparklyr`**
 
 
-# ① S3 `.csv`  {#sparklyr-read-s3-csv}
-## RStudio 서버 {#sparklyr-read-s3-csv-r}
+# EC2 &rarr; S3 백만송 데이터 작업흐름 [^one-million-song-eda] [^music-recommendation] {#million-song-EDA}
 
-먼저 S3 버킷 `.csv` 데이터를 파이썬 판다스로 불러오는 사례를 살펴보자.
-S3 EC2 인스턴스에서 AWS S3 버킷 데이터를 읽어들이기 위해서 RStudio 서버에 접속한다.
+[^one-million-song-eda]: [Jingying Zhou, Yibo Zhu, Yimin Zhang, Ziyue Jin, Ziyue Wu (April 27, 2016), "What is mainstream music? Million Songs Dataset Exploration"](https://zac2116.github.io/)
+[^music-recommendation]: [databricks, "Predicting Song Listens Using Apache Spark"](https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/3175648861028866/48824497172554/657465297935335/latest.html)
 
+빅데이터(백만송 데이터)를 분석하기 위해서 빅데이터는 클라우드 AWS S3에 저장하고, 이를 EC2에 설치한 스파크 클러스터를 통해 분석작업을 수행한다.
+이를 위해서 다음과 같은 작업흐름을 갖출 수 있다.
 
-``` {r rstudio-read-s3-data, eval=FALSE}
+1. S3 브라우저와 같은 FTP 프로그램을 이용하여 S3에 데이터를 전송한다.
+1. EC2 인스턴스에 우선 로컬 스파크 클러스터를 구축한다.
+1. 로컬 PC에서 EC2 인스턴스에 RStudio 서버 IDE 로 접속하여 분석작업을 수행한다.
 
+<img src="fig/s3-ec2-rstudio-workflow.png" alt="백만송 S3 업로드" width="77%" />
+
+## EC2에서 S3 접근 [^aws.s3-read-file] {#million-song-s3-access}
+
+[^aws.s3-read-file]: [Reading a csv file from S3:// in R #201](https://github.com/cloudyr/aws.s3/issues/201)
+
+EC2에서 S3로 접근하려면 `aws.s3` 팩키지를 사용한다. S3에 접근하기 위해서 `AWS_ACCESS_KEY_ID`, 
+`AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`을 설정한다. 
+설정된 내용이 제대로 되었는지는 `bucketlist()` 함수로 확인되면,
+`s3read_using()` 함수를 사용해서 CSV 파일을 EC2 컴퓨터에 데이터프레임으로 가져온다.
+
+``` {r access-to-S3-from-ec2, eval=FALSE}
+# 1. 환경설정 -----
+# install.packages("devtools")
+# devtools::install_github("cloudyr/aws.s3")
+
+library(aws.s3)
+library(tidyverse)
+
+# 2. S3 버킷 접근을 위한 키값 설정
+Sys.setenv("AWS_ACCESS_KEY_ID" = "A************************",
+           "AWS_SECRET_ACCESS_KEY" = "V*************************",
+           "AWS_DEFAULT_REGION" = "ap-northeast-2")
+
+# 3. S3 버킷 헬로월드
+## 3.1. 버킷 확인
+bucketlist()
+
+## 3.2. 데이터 가져오기
+msong_df <- s3read_using(read_csv, object = "s3://<버킷명>/million_song/YearPredictionMSD.txt", col_names = FALSE)
+
+## 3.3. 데이터 확인
+msong_df
+
+# A tibble: 515,345 x 91
+      X1    X2      X3    X4     X5      X6      X7     X8      X9   X10    X11     X12    X13   X14   X15   X16   X17   X18
+   <int> <dbl>   <dbl> <dbl>  <dbl>   <dbl>   <dbl>  <dbl>   <dbl> <dbl>  <dbl>   <dbl>  <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
+ 1  2001  49.9  21.5    73.1   8.75 -17.4   -13.1   -25.0  -12.2    7.83 -2.47   3.32   -2.32  10.2   611.  951.  698.  409.
+ 2  2001  48.7  18.4    70.3  12.9  -10.3   -24.8     8.77  -0.920 18.8   4.59   2.22    0.340 44.4  2057.  605.  457.  777.
+ 3  2001  51.0  31.9    55.8  13.4   -6.58  -18.5    -3.28  -2.35  16.1   1.40   2.74    0.828  7.47  700. 1016.  594.  356.
+ 4  2001  48.2  -1.90   36.3   2.59   0.972 -26.2     5.05 -10.3    3.55 -6.36   6.63   -3.35  37.6  2174.  697.  459.  743.
+ 5  2001  51.0  42.2    67.1   8.47 -15.9   -16.8   -12.5   -9.38  12.6   0.936  1.61    2.19  47.3   894.  810.  319.  435.
+ 6  2001  50.5   0.316  92.4  22.4  -25.5   -19.0    20.7   -5.20   3.64 -4.69   2.50   -3.02   7.69 1005.  785.  592.  496.
+ 7  2001  50.6  33.2    50.5  11.6  -27.2    -8.78  -12.0   -9.54  28.6   8.25  -0.437   5.66  11.1  1081. 1231. 1302.  953.
+ 8  2001  48.3   8.98   75.2  24.0  -16.0   -14.1     8.12  -1.88   7.47  1.18   1.47   -6.34   8.40 1620. 1762.  715. 1116.
+ 9  2001  49.8  34.0    56.7   2.90  -2.92  -26.4     1.71  -0.556 22.1   7.44  -0.0358  1.67  46.0   790.  608.  249.  288.
+10  2007  45.2  46.3   -40.7  -2.48   1.21   -0.653  -6.96 -12.2   17.0   2.00  -1.88    9.85  25.6  1905. 3676. 1977.  913.
+# ... with 515,335 more rows, and 73 more variables: X19 <dbl>, X20 <dbl>, X21 <dbl>, X22 <dbl>, X23 <dbl>, X24 <dbl>,
+#   X25 <dbl>, X26 <dbl>, X27 <dbl>, X28 <dbl>, X29 <dbl>, X30 <dbl>, X31 <dbl>, X32 <dbl>, X33 <dbl>, X34 <dbl>, X35 <dbl>,
+#   X36 <dbl>, X37 <dbl>, X38 <dbl>, X39 <dbl>, X40 <dbl>, X41 <dbl>, X42 <dbl>, X43 <dbl>, X44 <dbl>, X45 <dbl>, X46 <dbl>,
+#   X47 <dbl>, X48 <dbl>, X49 <dbl>, X50 <dbl>, X51 <dbl>, X52 <dbl>, X53 <dbl>, X54 <dbl>, X55 <dbl>, X56 <dbl>, X57 <dbl>,
+#   X58 <dbl>, X59 <dbl>, X60 <dbl>, X61 <dbl>, X62 <dbl>, X63 <dbl>, X64 <dbl>, X65 <dbl>, X66 <dbl>, X67 <dbl>, X68 <dbl>,
+#   X69 <dbl>, X70 <dbl>, X71 <dbl>, X72 <dbl>, X73 <dbl>, X74 <dbl>, X75 <dbl>, X76 <dbl>, X77 <dbl>, X78 <dbl>, X79 <dbl>,
+#   X80 <dbl>, X81 <dbl>, X82 <dbl>, X83 <dbl>, X84 <dbl>, X85 <dbl>, X86 <dbl>, X87 <dbl>, X88 <dbl>, X89 <dbl>, X90 <dbl>,
+#   X91 <dbl>
 ```
 
+# EC2 스파크 &rarr; S3 백만송 데이터 작업흐름 [^one-million-song-eda] [^music-recommendation] {#million-song-EDA}
 
-# ③ S3 버킷 `.parquet` {#pyspark-read-s3-parquet-pandas}
-## S3 버킷 `.parquet` &rarr; 파이썬 판다스 [^read-parquet-pandas] {#pyspark-read-s3-parquet-pandas-python} 
+## 스파크 EC2 설치 {#million-song-spark-install-ec2}
 
-[^read-parquet-pandas]: [Reading and Writing the Apache Parquet Format](https://arrow.apache.org/docs/python/parquet.html)
+자바는 설치해야 되고, `sudo apt-get install openjdk-8-jdk` 명령어를 통해서 간단히 설치할 수 있다.
+그리고 나서 `sparklyr` 팩키지를 설치하고 `spark_install(version = "2.3.2")` 명령어로 스파크를 설치하여 `R`과 연결까지 쉽게 할 수 있다.
+RStudio 엔지너어들이 수년동안 노력하면서 버그를 잡아낸 결과 단 한줄의 명령어로 문제를 쉽게 해소할 수 있게 되었다.
+`spark_connect()` 함수로 스파크에 연결점을 생성하고 `iris` 데이터프레임을 `copy_to()` 명령어로 던져넣게 되면 
+스파크에 `iris` RDD 데이터를 분석할 수 있게 된다. `src_tbls(sc)` 명령어로 분석가능한 RDD가 무엇인지 확인할 수 있고 
+`dplyr` 동사로 스파크 클러스터에 올라온 데이터를 분석할 수 있게 되었다.
 
-`.parquet` 파일을 읽어오기 위해서 `pyarrow` 팩키지를 사용한다. 먼저 판다스 데이터프레임을 생성하고 이를 `pyarrow` 객체로 변환시킨다.
 
-### `.parquet` 파일 생성 {#pyspark-read-s3-parquet-pandas-create}
+```{r aws-ec2-spark-install, eval=FALSE}
+# 1. 환경설정 -----
+# install.packages("devtools")
+# devtools::install_github("cloudyr/aws.s3")
 
-먼저 판다스 데이터프레임을 생성시킨다. 
-`pd.DataFrame()` 메쏘드를 사용해서 데이터프레임을 생성하고 판다스 데이터프레임을 불러읽어 `.parquet` 객체를 생성한다.
+library(aws.s3)
+library(tidyverse)
+library(sparklyr)
 
-```{r make-parquet-file, eval=FALSE}
-import pandas as pd
-import numpy as np
-import pyarrow as pa
-import pyarrow.parquet as pq
-from smart_open import smart_open
+# 2. 스파크 설치 -----
+spark_install(version = "2.3.2")
 
-py_df = pd.DataFrame({'one': [-1, np.nan, 2.5],
-                      'two': ['foo', 'bar', 'baz'],
-                      'three': [True, False, True]},
-                       index=list('abc'))
+# 3. 스파크 연결 -----
+sc <- spark_connect(master = "local")
 
-table = pa.Table.from_pandas(py_df)
+spark_home_dir()
 
-table.to_pandas().head()
-
-	one	two	three
-a	-1.0	foo	True
-b	NaN	bar	False
-c	2.5	baz	True
+# 4. 데이터 분석작업 -----
+iris_tbl <- copy_to(sc, iris)
+src_tbls(sc)
+[1] "iris"
+iris_tbl %>% 
+   sample_n(5)
+# Source: spark<?> [?? x 5]
+  Sepal_Length Sepal_Width Petal_Length Petal_Width Species
+*        <dbl>       <dbl>        <dbl>       <dbl> <chr>  
+1          5.1         3.5          1.4         0.2 setosa 
+2          4.9         3            1.4         0.2 setosa 
+3          4.7         3.2          1.3         0.2 setosa 
+4          4.6         3.1          1.5         0.2 setosa 
+5          5           3.6          1.4         0.2 setosa 
 ```
-
-`.parquet` 파일로 로컬 컴퓨터에 저장을 시키고 나아가 S3 버킷에 저장을 시킨다.
-`pq.write_table(table, 'example.parquet')` 명령어로 앞서 생성한 파케이 객체를 `example.parquet` 파일로 저장시킨다. 그리고 나서 `/home/ubuntu/notebooks` 디렉토리 
-`example.parquet` 파일이 생성된 것을 확인한다.
-
-```{r write-parquet-file, eval=FALSE}
-pq.write_table(table, 'example.parquet')
-import os
-print(os.getcwd())
-/home/ubuntu/notebooks
-! ls -al
-total 36
-drwxrwxr-x  3 ubuntu ubuntu  4096 Jan 14 05:41 .
-drwxr-xr-x 15 ubuntu ubuntu  4096 Jan 14 01:37 ..
--rw-rw-r--  1 ubuntu ubuntu  1447 Jan 11 08:04 01_hello-spark.ipynb
--rw-rw-r--  1 ubuntu ubuntu 12324 Jan 14 05:41 02_access-s3.ipynb
--rw-rw-r--  1 ubuntu ubuntu  1559 Jan 14 05:41 example.parquet
-drwxrwxr-x  2 ubuntu ubuntu  4096 Jan 14 05:29 .ipynb_checkpoints
-```
-
-### `.parquet` 파일 불러오기 {#pyspark-read-s3-parquet-pandas-read}
-
-앞서 생성시킨 로컬 EC2 인스턴스에 저장된 `.parquet` 파일을 불러온다.
-`pq.read_table()` 메쏘드를 통해 파케이 파일을 불러온다.
-
-```{r read-local-parquet-file, eval=FALSE}
-example_pq = pq.read_table('example.parquet')
-example_pq.to_pandas()
-
-one	two	three
-a	-1.0	foo	True
-b	NaN	bar	False
-c	2.5	baz	True
-```
-
-# ③ S3 `.csv` 스파크 (psark) {#pyspark-read-s3-data-ppark}
-
-# ④ S3 `.parquet` 스크파(spark) {#pyspark-read-s3-data-pyspark-python}
 
 
 
