@@ -43,6 +43,15 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
 
 <img src="fig/s3-ec2-rstudio-workflow.png" alt="백만송 S3 업로드" width="67%" />
 
+## 한걸음 더 들어갑니다. {#million-song-EDA-one-step-forward}
+
+한걸음 더 들어가 S3 버킷에 데이터가 저장되어 있는 상태에서 데이터 분석에 필요한 연산작업을 
+EC2 인스턴스를 생성시켜 이를 통해서 추진하는 것이다.
+EC2 인스턴스에 명령을 내리기 위해서 외부 로컬 컴퓨터에서 웹브라우저를 통해 접속하게 된다.
+
+<img src="fig/aws-import-s3-ec2-sparklyr.png" alt="S3-EC2-terminal-toolchain" width="77%" />
+
+
 # EC2에서 S3 접근 [^aws.s3-read-file] {#million-song-s3-access}
 
 [^aws.s3-read-file]: [Reading a csv file from S3:// in R #201](https://github.com/cloudyr/aws.s3/issues/201)
@@ -53,10 +62,6 @@ EC2에서 S3로 접근하려면 `aws.s3` 팩키지를 사용한다. S3에 접근
 `s3read_using()` 함수를 사용해서 CSV 파일을 EC2 컴퓨터에 데이터프레임으로 가져온다.
 
 ``` {r access-to-S3-from-ec2, eval=FALSE}
-# 1. 환경설정 -----
-# install.packages("devtools")
-# devtools::install_github("cloudyr/aws.s3")
-
 library(aws.s3)
 library(tidyverse)
 
@@ -98,119 +103,9 @@ msong_df
 #   X91 <dbl>
 ```
 
-# EC2 스파크 &rarr; S3 백만송 데이터 작업흐름 [^one-million-song-eda] [^music-recommendation] {#million-song-EDA}
-
-## 스파크 EC2 설치 {#million-song-spark-install-ec2}
-
-자바는 설치해야 되고, `sudo apt-get install openjdk-8-jdk` 명령어를 통해서 간단히 설치할 수 있다.
-그리고 나서 `sparklyr` 팩키지를 설치하고 `spark_install(version = "2.3.2")` 명령어로 스파크를 설치하여 `R`과 연결까지 쉽게 할 수 있다.
-RStudio 엔지너어들이 수년동안 노력하면서 버그를 잡아낸 결과 단 한줄의 명령어로 문제를 쉽게 해소할 수 있게 되었다.
-`spark_connect()` 함수로 스파크에 연결점을 생성하고 `iris` 데이터프레임을 `copy_to()` 명령어로 던져넣게 되면 
-스파크에 `iris` RDD 데이터를 분석할 수 있게 된다. `src_tbls(sc)` 명령어로 분석가능한 RDD가 무엇인지 확인할 수 있고 
-`dplyr` 동사로 스파크 클러스터에 올라온 데이터를 분석할 수 있게 되었다.
-
-
-```{r aws-ec2-spark-install, eval=FALSE}
-# 1. 환경설정 -----
-# install.packages("devtools")
-# devtools::install_github("cloudyr/aws.s3")
-
-library(aws.s3)
-library(tidyverse)
-library(sparklyr)
-
-# 2. 스파크 설치 -----
-spark_install(version = "2.3.2")
-
-# 3. 스파크 연결 -----
-sc <- spark_connect(master = "local")
-
-spark_home_dir()
-
-# 4. 데이터 분석작업 -----
-iris_tbl <- copy_to(sc, iris)
-src_tbls(sc)
-[1] "iris"
-iris_tbl %>% 
-   sample_n(5)
-# Source: spark<?> [?? x 5]
-  Sepal_Length Sepal_Width Petal_Length Petal_Width Species
-*        <dbl>       <dbl>        <dbl>       <dbl> <chr>  
-1          5.1         3.5          1.4         0.2 setosa 
-2          4.9         3            1.4         0.2 setosa 
-3          4.7         3.2          1.3         0.2 setosa 
-4          4.6         3.1          1.5         0.2 setosa 
-5          5           3.6          1.4         0.2 setosa 
-```
 
 
 
-
-## `.csv` 파일 스파크 분석 {#aws-csv-sparklyr}
-
-AWS S3 저장소에 데이터를 저장해서 활용하고, 스파크 클러스터를 별도 EC2 인스턴스로 묶어 
-데이터를 분석하는 것이 많이 활용되는 패턴 중 하다.
-특히 S3를 `s3fs`로 EC2와 동기화(sync)한 경우 마치 로컬 파일처럼 접근해서 데이터를 분석하는 것도 가능하다.
-
-<img src="fig/spark-s3fs-csv.png" alt="AWS CSV 파일" width="100%" />
-
-``` {r read-csv-with-sparklyr, eval=FALSE}
-# 4. 로컬 CSV 파일 불러오기 -------------------------
-
-flights <- spark_read_csv(sc, "flights_spark", 
-                          path =  "~/works/GF/spark/data/", 
-                          memory = TRUE, 
-                          columns = list(
-                            Year = "character",
-                            Month = "character",
-                            DayofMonth = "character",
-                            DayOfWeek = "character",
-                            DepTime = "character",
-                            CRSDepTime = "character",
-                            ArrTime = "character",
-                            CRSArrTime = "character",
-                            UniqueCarrier = "character",
-                            FlightNum = "character",
-                            TailNum = "character",
-                            ActualElapsedTime = "character",
-                            CRSElapsedTime = "character",
-                            AirTime = "character",
-                            ArrDelay = "character",
-                            DepDelay = "character",
-                            Origin = "character",
-                            Dest = "character",
-                            Distance = "character",
-                            TaxiIn = "character",
-                            TaxiOut = "character",
-                            Cancelled = "character",
-                            CancellationCode = "character",
-                            Diverted = "character",
-                            CarrierDelay = "character",
-                            WeatherDelay = "character",
-                            NASDelay = "character",
-                            SecurityDelay = "character",
-                            LateAircraftDelay = "character"), 
-                          infer_schema = FALSE)
-
-tidy_flights <- tbl(sc, "flights_spark") %>%
-  mutate(ArrDelay = as.integer(ArrDelay),
-         DepDelay = as.integer(DepDelay),
-         Distance = as.integer(Distance)) %>%
-  filter(!is.na(ArrDelay)) %>%
-  select(DepDelay, ArrDelay, Distance) %>%
-  sdf_register("tidy_spark")
-
-tbl_cache(sc, "tidy_spark")
-
-tbl(sc, "tidy_spark") %>% tally
-
-simple_model <- tidy_flights %>%
-  ml_linear_regression(DepDelay~.)
-
-summary(simple_model)
-
-spark_disconnect(sc)
-```
 
 
 
