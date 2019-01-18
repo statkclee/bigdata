@@ -61,52 +61,48 @@ EC2에서 S3로 접근하려면 `aws.s3` 팩키지를 사용한다. S3에 접근
 설정된 내용이 제대로 되었는지는 `bucketlist()` 함수로 확인되면,
 `s3read_using()` 함수를 사용해서 CSV 파일을 EC2 컴퓨터에 데이터프레임으로 가져온다.
 
-``` {r access-to-S3-from-ec2, eval=FALSE}
-library(aws.s3)
-library(tidyverse)
+[S3 &rarr; 로컬 RStudio IDE](bigdata-sparklyr-read-data-s3-local.html#2_aws_s3_저장소_인증) AWS S3 저장소 인증를 참조하여 
+동일하게 `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`을 설정하여 `config.yml` 파일에 담아둔다.
+인증키를 활용하여 작은 데이터 `iris.csv` 파일 뿐만 아니라 `YearPredictionMSD.txt` 파일도 불러온다.
 
-# 2. S3 버킷 접근을 위한 키값 설정
-Sys.setenv("AWS_ACCESS_KEY_ID" = "A************************",
-           "AWS_SECRET_ACCESS_KEY" = "V*************************",
+`tictoc()` 팩키지를 설치하여 불러오는데 소요된 시간도 확인한다. `YearPredictionMSD.txt` 파일크기는 약 500MB 정도 크기를 갖는다.
+
+``` {r access-to-S3-from-ec2, eval=FALSE}
+# 0. 환경설정 -----
+library(tidyverse)
+library(tictoc)
+library(config)
+library(aws.s3)
+
+aws <- config::get("aws")
+
+Sys.setenv("AWS_ACCESS_KEY_ID" = aws$AWS_ACCESS_KEY_ID,
+           "AWS_SECRET_ACCESS_KEY" = aws$AWS_SECRET_ACCESS_KEY,
            "AWS_DEFAULT_REGION" = "ap-northeast-2")
 
-# 3. S3 버킷 헬로월드
-## 3.1. 버킷 확인
-bucketlist()
+# 1. S3 버킷 -----
 
-## 3.2. 데이터 가져오기
-msong_df <- s3read_using(read_csv, object = "s3://<버킷명>/million_song/YearPredictionMSD.txt", col_names = FALSE)
+# bucketlist()
+bucket_list_df() %>% 
+  filter(str_detect(Bucket, "tidyverse"))
 
-## 3.3. 데이터 확인
+# 2. S3 버킷 파일 불러오기 -----
+## 2.1. 작은 파일 
+iris_df <- s3read_using(read.csv, object = "iris.csv", bucket = "tidyverse-seoul") %>% 
+  tbl_df
+
+iris_df
+
+## 2.2. 큰 파일 
+tic()
+msong_df <- s3read_using(read.csv, object = "million_song/YearPredictionMSD.txt", bucket = "tidyverse-seoul") %>% 
+  tbl_df
+
 msong_df
-
-# A tibble: 515,345 x 91
-      X1    X2      X3    X4     X5      X6      X7     X8      X9   X10    X11     X12    X13   X14   X15   X16   X17   X18
-   <int> <dbl>   <dbl> <dbl>  <dbl>   <dbl>   <dbl>  <dbl>   <dbl> <dbl>  <dbl>   <dbl>  <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
- 1  2001  49.9  21.5    73.1   8.75 -17.4   -13.1   -25.0  -12.2    7.83 -2.47   3.32   -2.32  10.2   611.  951.  698.  409.
- 2  2001  48.7  18.4    70.3  12.9  -10.3   -24.8     8.77  -0.920 18.8   4.59   2.22    0.340 44.4  2057.  605.  457.  777.
- 3  2001  51.0  31.9    55.8  13.4   -6.58  -18.5    -3.28  -2.35  16.1   1.40   2.74    0.828  7.47  700. 1016.  594.  356.
- 4  2001  48.2  -1.90   36.3   2.59   0.972 -26.2     5.05 -10.3    3.55 -6.36   6.63   -3.35  37.6  2174.  697.  459.  743.
- 5  2001  51.0  42.2    67.1   8.47 -15.9   -16.8   -12.5   -9.38  12.6   0.936  1.61    2.19  47.3   894.  810.  319.  435.
- 6  2001  50.5   0.316  92.4  22.4  -25.5   -19.0    20.7   -5.20   3.64 -4.69   2.50   -3.02   7.69 1005.  785.  592.  496.
- 7  2001  50.6  33.2    50.5  11.6  -27.2    -8.78  -12.0   -9.54  28.6   8.25  -0.437   5.66  11.1  1081. 1231. 1302.  953.
- 8  2001  48.3   8.98   75.2  24.0  -16.0   -14.1     8.12  -1.88   7.47  1.18   1.47   -6.34   8.40 1620. 1762.  715. 1116.
- 9  2001  49.8  34.0    56.7   2.90  -2.92  -26.4     1.71  -0.556 22.1   7.44  -0.0358  1.67  46.0   790.  608.  249.  288.
-10  2007  45.2  46.3   -40.7  -2.48   1.21   -0.653  -6.96 -12.2   17.0   2.00  -1.88    9.85  25.6  1905. 3676. 1977.  913.
-# ... with 515,335 more rows, and 73 more variables: X19 <dbl>, X20 <dbl>, X21 <dbl>, X22 <dbl>, X23 <dbl>, X24 <dbl>,
-#   X25 <dbl>, X26 <dbl>, X27 <dbl>, X28 <dbl>, X29 <dbl>, X30 <dbl>, X31 <dbl>, X32 <dbl>, X33 <dbl>, X34 <dbl>, X35 <dbl>,
-#   X36 <dbl>, X37 <dbl>, X38 <dbl>, X39 <dbl>, X40 <dbl>, X41 <dbl>, X42 <dbl>, X43 <dbl>, X44 <dbl>, X45 <dbl>, X46 <dbl>,
-#   X47 <dbl>, X48 <dbl>, X49 <dbl>, X50 <dbl>, X51 <dbl>, X52 <dbl>, X53 <dbl>, X54 <dbl>, X55 <dbl>, X56 <dbl>, X57 <dbl>,
-#   X58 <dbl>, X59 <dbl>, X60 <dbl>, X61 <dbl>, X62 <dbl>, X63 <dbl>, X64 <dbl>, X65 <dbl>, X66 <dbl>, X67 <dbl>, X68 <dbl>,
-#   X69 <dbl>, X70 <dbl>, X71 <dbl>, X72 <dbl>, X73 <dbl>, X74 <dbl>, X75 <dbl>, X76 <dbl>, X77 <dbl>, X78 <dbl>, X79 <dbl>,
-#   X80 <dbl>, X81 <dbl>, X82 <dbl>, X83 <dbl>, X84 <dbl>, X85 <dbl>, X86 <dbl>, X87 <dbl>, X88 <dbl>, X89 <dbl>, X90 <dbl>,
-#   X91 <dbl>
+toc()
+225.706 sec elapsed
 ```
 
-
-
-
-
-
+<img src="fig/aws-s3-ec2-import-data.png" alt="AWS EC2로 S3 버킷 백만송 데이터 불러오기" width="100%" />
 
 
