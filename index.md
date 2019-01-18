@@ -24,8 +24,10 @@ title: 빅데이터
         * [데이터프레임과 SQL](bigdata-pyspark-dataframe-sql.html)
         * [기계학습 예측모형](bigdata-pyspark-predictive-model.html) (TBA)
     + RStudio 스파크 - `sparklyr`
-        * [단독형 스파크 설치 - PC/노트북, EC2 원격 컴퓨터](ds-sparklyr.html)         
-        * [데이터(S3) 읽어오기 - R](bigdata-sparklyr-read-data.html)
+        * **스파크 설치**
+            - [로컬 컴퓨터 스파크 설치](ds-sparklyr.html) 
+            - [AWS EC2 스파크 설치](ds-install-sparklyr-ec2.html) 
+        - [데이터(S3) 읽어오기 - R](bigdata-sparklyr-read-data.html)
             + [분석할 데이터를 스파크에 적재하는 방법 - S3 포함](ml-ec2-s3.html)
         * [Spark와 연결하는 `sparklyr`, `dplyr`, 그리고 기계학습](ml-sparklyr.html)
 - [$H_2 O$ 기계학습](h20-arch.html)

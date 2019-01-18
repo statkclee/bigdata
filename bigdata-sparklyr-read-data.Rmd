@@ -165,3 +165,73 @@ iris_tbl %>%
 
 
 
+
+## `.csv` 파일 스파크 분석 {#aws-csv-sparklyr}
+
+AWS S3 저장소에 데이터를 저장해서 활용하고, 스파크 클러스터를 별도 EC2 인스턴스로 묶어 
+데이터를 분석하는 것이 많이 활용되는 패턴 중 하다.
+특히 S3를 `s3fs`로 EC2와 동기화(sync)한 경우 마치 로컬 파일처럼 접근해서 데이터를 분석하는 것도 가능하다.
+
+<img src="fig/spark-s3fs-csv.png" alt="AWS CSV 파일" width="100%" />
+
+``` {r read-csv-with-sparklyr, eval=FALSE}
+# 4. 로컬 CSV 파일 불러오기 -------------------------
+
+flights <- spark_read_csv(sc, "flights_spark", 
+                          path =  "~/works/GF/spark/data/", 
+                          memory = TRUE, 
+                          columns = list(
+                            Year = "character",
+                            Month = "character",
+                            DayofMonth = "character",
+                            DayOfWeek = "character",
+                            DepTime = "character",
+                            CRSDepTime = "character",
+                            ArrTime = "character",
+                            CRSArrTime = "character",
+                            UniqueCarrier = "character",
+                            FlightNum = "character",
+                            TailNum = "character",
+                            ActualElapsedTime = "character",
+                            CRSElapsedTime = "character",
+                            AirTime = "character",
+                            ArrDelay = "character",
+                            DepDelay = "character",
+                            Origin = "character",
+                            Dest = "character",
+                            Distance = "character",
+                            TaxiIn = "character",
+                            TaxiOut = "character",
+                            Cancelled = "character",
+                            CancellationCode = "character",
+                            Diverted = "character",
+                            CarrierDelay = "character",
+                            WeatherDelay = "character",
+                            NASDelay = "character",
+                            SecurityDelay = "character",
+                            LateAircraftDelay = "character"), 
+                          infer_schema = FALSE)
+
+tidy_flights <- tbl(sc, "flights_spark") %>%
+  mutate(ArrDelay = as.integer(ArrDelay),
+         DepDelay = as.integer(DepDelay),
+         Distance = as.integer(Distance)) %>%
+  filter(!is.na(ArrDelay)) %>%
+  select(DepDelay, ArrDelay, Distance) %>%
+  sdf_register("tidy_spark")
+
+tbl_cache(sc, "tidy_spark")
+
+tbl(sc, "tidy_spark") %>% tally
+
+simple_model <- tidy_flights %>%
+  ml_linear_regression(DepDelay~.)
+
+summary(simple_model)
+
+spark_disconnect(sc)
+```
+
+
+
+
