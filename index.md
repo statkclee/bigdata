@@ -31,6 +31,7 @@ title: 빅데이터
             + [로컬 `.csv` &rarr; 로컬 스파크 - `sparklyr`](bigdata-sparklyr-read-data-csv-local.html)
             + [S3 &rarr; 로컬 RStudio IDE](bigdata-sparklyr-read-data-s3-local.html)
             + [S3 &rarr; EC2 RStudio 서버](bigdata-sparklyr-read-data-s3-ec2.html)
+            + [S3 &rarr; EC2 서버 - 스파크](bigdata-sparklyr-read-data-s3-spark.html)
             + [분석할 데이터를 스파크에 적재하는 방법 - S3 포함](ml-ec2-s3.html)
         * [Spark와 연결하는 `sparklyr`, `dplyr`, 그리고 기계학습](ml-sparklyr.html)
 - [$H_2 O$ 기계학습](h20-arch.html)

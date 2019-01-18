@@ -1,7 +1,7 @@
 ---
 layout: page
 title: 빅데이터 
-subtitle: "S3 &rarr; EC2 스파크 서버"
+subtitle: "S3 &rarr; EC2 서버 - 스파크"
 author:
     name: xwMOOC
     url: https://www.facebook.com/groups/tidyverse/
@@ -96,4 +96,55 @@ iris_tbl %>%
 4          4.6         3.1          1.5         0.2 setosa 
 5          5           3.6          1.4         0.2 setosa 
 ```
+
+
+```{r aws-ec2-spark-s3-cluster, eval=FALSE}
+# 0. 환경설정 -----
+library(tidyverse)
+library(sparklyr)
+library(tictoc)
+library(config)
+library(aws.s3)
+library(aws.signature)
+
+aws <- config::get("aws")
+
+Sys.setenv("AWS_ACCESS_KEY_ID" = aws$AWS_ACCESS_KEY_ID,
+           "AWS_SECRET_ACCESS_KEY" = aws$AWS_SECRET_ACCESS_KEY,
+           "AWS_DEFAULT_REGION" = "ap-northeast-2")
+
+spark_disconnect(sc)
+
+# 1. 스파크 클러스터 -----
+## 1.1. 설치된 SPARK 버젼확인 설정
+Sys.getenv("SPARK_HOME")
+spark_home_dir()
+spark_installed_versions()
+
+## 1.2. 스파크 클러스터 연결
+config <- spark_config()
+config$sparklyr.defaultPackages <- c("com.databricks:spark-csv_2.10:1.5.0",
+                                     "com.amazonaws:aws-java-sdk-pom:1.10.34",
+                                     "org.apache.hadoop:hadoop-aws:2.7.3")
+config$sparklyr.hadoop.fs.s3a.access.key <- aws$AWS_ACCESS_KEY_ID
+config$sparklyr.hadoop.fs.s3a.secret.key <- aws$AWS_SECRET_ACCESS_KEY
+# config$sparklyr.hadoop.fs.s3a <- "org.apache.hadoop:fs.s3a.S3AFileSystem"
+config$sparklyr.connect.csv.embedded
+
+sc <- spark_connect(master="local", config = config)
+
+## 1.3. 스파크 버젼 확인
+spark_version(sc=sc)
+
+# 2. S3 버킷 파일 불러오기 -----
+## 2.1. iris.csv 파일 불러오기 -------------------------
+# get_bucket("tidyverse-seoul")
+
+iris_rdd <- spark_read_csv(sc, name="iris_data", path="s3a://tidyverse-seoul/iris.csv",
+                           infer_schema = TRUE,
+                           overwrite = TRUE)
+```
+
+
+
 
