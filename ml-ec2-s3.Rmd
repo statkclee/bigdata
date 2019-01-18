@@ -27,37 +27,6 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
 ```
 
 
-# 스파크에 데이터를 적재하는 두가지 방법 [^load-data-on-spark] {#load-data-on-spark}
-
-[^load-data-on-spark]: [RStudio Webinar - Understanding sparklyr deployment modes](https://www.rstudio.com/resources/webinars/understanding-sparklyr-deployment-modes/)
-
-가장 이상적으로 AWS S3, 하둡, RDBMS 등 데이터를 스파크 클러스터를 통해 가져오는 것이 이상적인 방법이다.
-즉, `sparkly` 팩키지를 활용하여 스파크 클러스터가 원천 데이터의 위치를 파악하고 이를 매핑하여 불러와서 분석작업을 수행시키는 방법으로,
-대용량 데이터 분석에 적합하지만, 모든 노드가 URL, 네트워크 경로 등을 맞춰야 하는 수고스러움도 있다.
-
-<img src="fig/spark-access-to-data-source.png" alt="스파크 데이터 접근" width="77%" />
-
-또 다른 방법은 원천 데이터를 R로 불러읽어온다. 그리고 나서 `copy_to()` 명령어를 활용하여 스파크에 데이터를 넘겨 빅데이터를 분석한다.
-상대적으로 데이터 크기가 적은 경우 유용한 방법이 될 수 있다.
-
-<img src="fig/spark-access-to-data-option.png" alt="스파크 데이터 접근 두번째 방법" width="77%" />
-
-
-# AWS S3 데이터를 읽어오는 전략 {#load-data-on-spark-strategy}
-
-AWS S3에 저장된 대용량 데이터를 읽어오는 전략은 다음과 크게 4가지 방식이 존재한다.
-
-- EC2 컴퓨터에서 직접 `aws.s3` 팩키지를 통해 직접 S3 저장소 접근
-- 스파크 클러스터를 EC2 컴퓨터를 로컬 컴퓨터로 생성시켜 S3 저장소 접근 
-- EC2 컴퓨터를 `flintrock` 유형의 도구를 활용하여 스파크 클러스터를 생성시켜 S3 저장소 접근 
-- AWS EMR을 활용하여 단속으로 필요시 마다 스파크 클러스터를 생성시켜 S3 저장소 접근 
-
-첫번째 방식은 많이 활용되는 방식으로 아래 매뉴얼을 활용하여 따라가면 문제가 없고, 
-AWS EMR 방식도 AWS에서 EMR 스파크 클러스터를 생성시킬 때 설정을 잘 맞춰놔서 필요한 일부 설정만으로도 S3 저장소에 접근할 수 있다.
-EC2에 스파크 클러스터를 직접 설치하는 경우 S3 저장소에 설정을 잘 맞춰놓는 것이 그렇게 쉽지만은 않다.
-
-
-<img src="fig/aws-ec2-spark-s3-link.png" alt="AWS EC2 스파크 S3 연결" width="57%" />
 
 ## AWS S3 데이터를 EC2 RStudio에서 읽어오기 [^aws-s3-read-write] [^cloudyr-aws-s3] {#load-data-on-spark-read}
 

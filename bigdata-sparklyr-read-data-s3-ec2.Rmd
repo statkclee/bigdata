@@ -28,7 +28,7 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
 
 
 
-# EC2 &rarr; S3 백만송 데이터 작업흐름 [^one-million-song-eda] [^music-recommendation] {#million-song-EDA}
+# S3 백만송 데이터 &rarr; EC2 작업흐름 [^one-million-song-eda] [^music-recommendation] {#million-song-EDA}
 
 [^one-million-song-eda]: [Jingying Zhou, Yibo Zhu, Yimin Zhang, Ziyue Jin, Ziyue Wu (April 27, 2016), "What is mainstream music? Million Songs Dataset Exploration"](https://zac2116.github.io/)
 [^music-recommendation]: [databricks, "Predicting Song Listens Using Apache Spark"](https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/3175648861028866/48824497172554/657465297935335/latest.html)
@@ -37,12 +37,13 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
 이를 위해서 다음과 같은 작업흐름을 갖출 수 있다.
 
 1. S3 브라우저와 같은 FTP 프로그램을 이용하여 S3에 데이터를 전송한다.
+    - [빅데이터 들어가며 - 기본기: AWS S3 파일 업로드](bigdata-pyspark-prerequisite.html#6_aws_s3_%ED%8C%8C%EC%9D%BC_%EC%97%85%EB%A1%9C%EB%93%9C) 참조
 1. EC2 인스턴스에 우선 로컬 스파크 클러스터를 구축한다.
 1. 로컬 PC에서 EC2 인스턴스에 RStudio 서버 IDE 로 접속하여 분석작업을 수행한다.
 
-<img src="fig/s3-ec2-rstudio-workflow.png" alt="백만송 S3 업로드" width="77%" />
+<img src="fig/s3-ec2-rstudio-workflow.png" alt="백만송 S3 업로드" width="67%" />
 
-## EC2에서 S3 접근 [^aws.s3-read-file] {#million-song-s3-access}
+# EC2에서 S3 접근 [^aws.s3-read-file] {#million-song-s3-access}
 
 [^aws.s3-read-file]: [Reading a csv file from S3:// in R #201](https://github.com/cloudyr/aws.s3/issues/201)
 
