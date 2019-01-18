@@ -27,7 +27,8 @@ title: 빅데이터
         * **스파크 설치**
             - [로컬 컴퓨터 스파크 설치](ds-sparklyr.html) 
             - [AWS EC2 스파크 설치](ds-install-sparklyr-ec2.html) 
-        - [데이터(S3) 읽어오기 - R](bigdata-sparklyr-read-data.html)
+        - [데이터(S3) 읽어오는 전략 - R](bigdata-sparklyr-read-data.html)
+            + [S3 &rarr; EC2 RStudio 서버](bigdata-sparklyr-read-data-s3-ec2.html)
             + [분석할 데이터를 스파크에 적재하는 방법 - S3 포함](ml-ec2-s3.html)
         * [Spark와 연결하는 `sparklyr`, `dplyr`, 그리고 기계학습](ml-sparklyr.html)
 - [$H_2 O$ 기계학습](h20-arch.html)
