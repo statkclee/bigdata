@@ -34,6 +34,7 @@ title: 빅데이터
             + [S3 &rarr; EC2 서버 - 스파크](bigdata-sparklyr-read-data-s3-spark.html)
             + [분석할 데이터를 스파크에 적재하는 방법 - S3 포함](ml-ec2-s3.html)
         * [Spark와 연결하는 `sparklyr`, `dplyr`, 그리고 기계학습](ml-sparklyr.html)
+- [스파크 SQL(Spark SQL)](bigdata-spark-sql.html)
 - [$H_2 O$ 기계학습](h20-arch.html)
     + [$H_2 O$ 하둡 스파크 클러스터 설치](ds-h2o-spark-hadoop.html)    
     + [$H_2 O$ R 연습문제](h2o-r-exercise.html)

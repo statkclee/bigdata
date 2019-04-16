@@ -1,0 +1,239 @@
+---
+layout: page
+title: 빅데이터 
+subtitle: "스파크 SQL(Spark SQL)"
+author:
+    name: xwMOOC
+    url: https://www.facebook.com/groups/tidyverse/
+    affiliation: Tidyverse Korea
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+
+``` {r, include=FALSE}
+# source("tools/chunk-options.R")
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
+                    comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+library(reticulate)
+use_condaenv("anaconda3")
+# reticulate::repl_python()
+```
+
+
+
+# 스파크 SQL 들어가며 {#spark-sql}
+
+`pip install pyspark`로 파이썬 스파크를 설치하게 되면 스파크세션을 만들어서 스파크 SQL로 들어갈 수 있는 여정을 시작할 수 있다. [스파크 Getting Started](https://spark.apache.org/docs/latest/sql-getting-started.html)를 참조해서 스파크 세션을 생성한다.
+
+그리고 나서, 그 유명한 붓꽃 데이터(`iris.csv`) 데이터를 로컬 컴퓨터에서 불러와서 스파크 데이터프레임으로 생성시킨다.
+
+```{python spark-sql}
+from pyspark.sql import *
+
+spark = SparkSession \
+    .builder \
+    .appName("Python Spark SQL basic example") \
+    .config("spark.some.config.option") \
+    .getOrCreate()
+    
+iris_df = spark.read.csv("data/iris.csv", inferSchema = True, header = True)
+
+iris_df.show(5)
+```
+
+
+## 스파크 SQL {#spark-sql-helloworld}
+
+다음으로 데이터프레임에 SQL을 적용시킬 수 있는 객체를 별도로 만든다.
+이때 `스파크데이터프레임.createOrReplaceTempView("객체명")` 메소드를 사용한다.
+`spark.sql()` 메쏘드를 사용해서 SQL 문을 던져 원하는 결과를 얻을 수 있다.
+
+```{python spark-sql-hello-world}
+iris_df.createOrReplaceTempView("iris")
+
+spark.sql("SELECT * FROM iris LIMIT 5").show()
+```
+
+
+## 스파크 SQL 스키마 {#spark-sql-schema}
+
+테이블에 SQL 질의(Query)를 던지기 전에 가장 먼저 해야 되는 작업은 아마도 스카마(Schema) 구조를 파악하는 것이다. 이를 위해서 SQL DESCRIBE 명령어를 사용한다.
+
+```{python spark-sql-schema}
+spark.sql("DESCRIBE iris").show()
+```
+
+
+# 스파크 SQL 기본기 [^spark-zeppline] {#spark-sql-basics}
+
+[^spark-zeppline]: [제플린, "https://www.zepl.com/viewer/notebooks/bm90ZTovL3pqZmZkdS8wN2M3YmI0MmJjMWI0YmE0OTc1M2IzMzZkMjA2MTk4Ny9ub3RlLmpzb24"](https://www.zepl.com/viewer/notebooks/bm90ZTovL3pqZmZkdS8wN2M3YmI0MmJjMWI0YmE0OTc1M2IzMzZkMjA2MTk4Ny9ub3RlLmpzb24)
+
+## 데이터 프레임 생성 {#spark-sql-basics-create}
+
+`createDataFrame()` 메쏘드를 사용해서 스파크 데이터프레임을 작성한다.
+그리고, 판다스 데이터프레임에서 스파크 데이터프레임도 생성이 가능하다.
+앞써 `spark.read_csv()` 메쏘드, DataFrameReader를 사용해서 스파크 데이터프레임 생성하는 것도 가능하다.
+
+```{python spark-sql-basics}
+df1 = spark.createDataFrame([(1, "andy", 20, "USA"), 
+                             (2, "jeff", 23, "China"), 
+                             (3, "james", 18, "USA")]).toDF("id", "name", "age", "country")
+
+df1.printSchema
+df1.show()
+
+# 판다스 데이터프레임에서 스파크 데이터프레임 생성
+df2 = spark.createDataFrame(df1.toPandas())
+df2.printSchema
+df2.show()
+```
+
+## 신규 필드 생성 {#spark-sql-basics-create-mutate}
+
+`dplyr` 팩키지 `mutate`와 마찬가지로 신규 필드를 생성할 때는 `withColumn()` 메쏘드를 사용한다.
+
+```{python spark-sql-basics-mutate}
+df2 = df1.withColumn("age2", df1["age"] + 1)
+df2.show()
+```
+
+## 칼럼 추출 및 제거 {#spark-sql-basics-create-column}
+
+`dplyr` 팩키지 `select`와 마찬가지로 원하는 변수 칼럼을 추출하고자 할 때는 `select` 메쏘드를 사용한다.
+칼럼을 제거하고자 하는 경우 `drop`을 사용한다.
+
+```{python spark-sql-basics-select}
+df2 = df1.select("id", "name")
+df2.show()
+
+df1.drop("id", "name").show()
+```
+
+## 관측점 행 추출 {#spark-sql-basics-create-subset}
+
+`dplyr` 팩키지 `filter`와 마찬가지로 원하는 관측점 행을 추출하고자 할 때는 동일한 명칭의 `filter` 메쏘드를 사용한다.
+
+```{python spark-sql-basics-filter}
+df1.filter(df1["age"] >= 20).show()
+```
+
+## 그룹별 요약 {#spark-sql-basics-groupby}
+
+그룹별 요약을 하는데 `groupBy`를 `agg`와 함께 사용한다. 
+이는 `dplyr` 팩키지 `group_by` + `summarize`와 동일한 개념이다.
+
+```{python spark-sql-basics-groupby}
+df1.groupBy("country").agg({"age": "avg", "id": "count"}).show()
+```
+
+
+
+## 사용자 정의함수(UDF) {#spark-sql-basics-udf}
+
+사용자 정의함수(User Defined Function)을 작성하여 표준 SQL 구문에서 제공되지 않는 연산작업을 수행시킬 수 있다.
+
+```{python spark-sql-basics-udf}
+from pyspark.sql.functions import udf
+upper_character = udf(lambda x: x.upper())
+
+df1.select(upper_character(df1["name"])).show()
+```
+
+## 데이터프레임 죠인 {#spark-sql-basics-join}
+
+두개의 서로 다른 스파크 데이터프레임을 죠인(join)하는 것도 가능하다.
+
+```{python spark-sql-basics-join}
+df1.show()
+
+df2 = spark.createDataFrame([(1, "USA"), (2, "China")]).toDF("c_id", "c_name")
+df2.show()
+
+df1.join(df2, df1["id"] == df2["c_id"]).show()
+```
+
+
+
+# 윈도우 함수 {#spark-sql-windows}
+
+[databricks, "Introducing Window Functions in Spark SQL Notebook"](http://cdn2.hubspot.net/hubfs/438089/notebooks/eBook/Introducing_Window_Functions_in_Spark_SQL_Notebook.html)에서 데이터를 준비한다.
+
+```{python spark-sql-windows}
+data = \
+  [("Thin", "Cell Phone", 6000),
+  ("Normal", "Tablet", 1500),
+  ("Mini", "Tablet", 5500),
+  ("Ultra thin", "Cell Phone", 5500),
+  ("Very thin", "Cell Phone", 6000),
+  ("Big", "Tablet", 2500),
+  ("Bendable", "Cell Phone", 3000),
+  ("Foldable", "Cell Phone", 3000),
+  ("Pro", "Tablet", 4500),
+  ("Pro2", "Tablet", 6500)]
+  
+df = spark.createDataFrame(data, ["product", "category", "revenue"])
+
+df.createOrReplaceTempView("product")
+
+start_df = spark.sql("SELECT category, product, revenue \
+                      FROM product \
+                      ORDER BY category, revenue DESC")
+start_df.show()                      
+```
+
+제품군별로 가장 매출 차이를 찾아보고자 하는 사례를 만들어보자.
+LAG, LEAD를 OVER와 함께 사용하여 윈도우 함수를 적용하여 관측점을 이동시킬 수 있다.
+하지만 제품군내에서 작업된 것은 아니라 시각적으로 불편한다.
+
+```{python spark-sql-windows-partition}
+start_df.createOrReplaceTempView("start_tbl")
+
+reveune_query = """
+    SELECT category, product, 
+    LAG(revenue, 1) OVER (ORDER BY revenue) AS revenue_lag,
+    revenue,
+    LEAD(revenue, 1) OVER (ORDER BY revenue) AS revenue_lead
+    FROM start_tbl
+    """
+
+spark.sql(reveune_query).show()
+```
+
+`PARTITION BY`를 그룹 집단을 도입하게 되면 원하는 결과를 얻을 수 있게 된다.
+
+```{python spark-sql-windows-partition-call}
+reveune_query = """
+    SELECT category, product, 
+    LAG(revenue, 1) OVER (PARTITION BY category ORDER BY revenue) AS revenue_lag,
+    revenue,
+    LEAD(revenue, 1) OVER (PARTITION BY category ORDER BY revenue) AS revenue_lead
+    FROM start_tbl
+    """
+
+spark.sql(reveune_query).show()
+```
+
+`ROW_NUMBER()`를 도입하게 되면 각 그룹별 번호를 매길 수 있게 된다.
+
+```{python spark-sql-windows-partition-call-row}
+reveune_query = """
+    SELECT category, product, 
+    ROW_NUMBER() OVER(PARTITION BY category ORDER BY revenue) AS id,
+    LAG(revenue, 1) OVER (PARTITION BY category ORDER BY revenue) AS revenue_lag,
+    revenue,
+    LEAD(revenue, 1) OVER (PARTITION BY category ORDER BY revenue) AS revenue_lead
+    FROM start_tbl
+    """
+
+spark.sql(reveune_query).show()
+```
