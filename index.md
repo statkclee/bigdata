@@ -44,7 +44,8 @@ title: 빅데이터
     + [AWS 우분투 EC2 + S3 버킷 + RStudio 서버](ds-aws-rstudio-server.html)
     + [AWS EMR - `sparklyr`](bigdata-aws-emr.html)    
     + [스파크 EC2 클러스터 - 부싯돌(flintrock)](ml-aws-ec2-flintrock.html)
-        - [스파크 EC2 클러스터 - 데이터과학 툴체인(R, sparklyr)](ml-aws-ec2-flintrock-sparklyr.html)    
+        - [스파크 EC2 클러스터 - 데이터과학 툴체인(R, sparklyr)](ml-aws-ec2-flintrock-sparklyr.html)
+- [AWS IAM](cloud-aws-iam.html)        
 - **참고**
     - [빅메모리(bigmemory)](bigdata-bigmemeory.html): "빅데이터는 디스크에 쓰고 R 메모리라고 읽는다"
     - [SparkR 들어가며](sparkr-intro.html)
