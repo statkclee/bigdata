@@ -33,7 +33,9 @@ use_condaenv("anaconda3")
 
 AWS S3의 정적 웹 사이트 호스팅(`Static Web Site Hosting`) 기능을 활용하여 블로그를 S3에 올릴 수 있다. S3에 대한 비용은 [Amazon S3 요금](https://aws.amazon.com/ko/s3/pricing/)에서 확인할 수 있는데 **S3 Standard 스토리지** 기준 `처음 50TB/월` &rarr; `0.025 USD/GB` 요금이 나와 있다.
 
-# 블로그 웹사이트 {#aws-blogs}
+# 블로그 웹사이트 [^aws-blog-hosting] {#aws-blogs}
+
+[^aws-blog-hosting]: [Kyle Galbraith (Jul 29, 2017), "How to Host a Website on S3 Without Getting Lost in the Sea"](https://medium.com/@kyle.galbraith/how-to-host-a-website-on-s3-without-getting-lost-in-the-sea-e2b82aa6cd38)
 
 제킬로 개인 블로그를 제작하는 방법에 대해서는 다음 웹사이트를 참고한다.
 
@@ -68,7 +70,40 @@ GUI 콘솔을 사용해서 테스트 개념으로 버킷을 하나 생성한다.
 
 ## S3 버킷 생성 {#aws-bucket-create}
 
+- 스토리지 &rarr; S3 &rarr; S3 버킷 &rarr; 버킷 만들기 &rarr; 버킷명(`tidyverse`)
 
+순서대로 S3 버킷을 생성하여 `tidyverse` 이름을 갖는 버킷을 만든다.
 
+## 제킬 웹사이트 S3 업로드 {#aws-bucket-create}
+
+`jekyll serve`를 하게 되면 `_site` 디렉토리에 정적 웹사이트 콘텐츠가 모여있다. `_site` 전체 내용을 생성한 버킷에 업로드한다.
+
+## 버킷 정책(Permission) 설정 {#aws-bucket-permission}
+
+생성한 버킷(`tidyverse`)으로 들어가서 **권한** &rarr; **버킷 정책(Permission)** 에서 `버킷 정책 편집기`에 다음 내용을 복사하여 붙여넣는다.
+
+```{r bucket-permission, eval=FALSE}
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::tidyverse/*"
+        }
+    ]
+}
+```
+
+## 버킷 정적 웹 사이트 호스팅 기능 활성화 {#bucket-static-web-hosting}
+
+버킷(`tidyverse`)에서 **속성** &rarr; **정적 웹 사이트 호스팅** 기능을 활성화 시킨다.
+별도 개인 도메인이 없는 경우 `이 버킷을 사용하여 웹 사이트를 호스팅합니다.`를 클릭하여 정적 웹사이트 호스팅을 통해 블로그를 운영한다.
+
+> 엔드포인트 : <http://tidyverse.s3-website.ap-northeast-2.amazonaws.com>
+
+개인 도메인이 있는 경우 **요청 리디렉션**을 활용하여 구입한 도메인과 블로그 웹사이트를 연결시킨다.
 
 

@@ -1326,6 +1326,105 @@ window.initializeCodeFolding = function(show) {
 </script>
 
 
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(data-line-number);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  { background-color: #f8f8f8; }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ef2929; } /* Alert */
+code span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #c4a000; } /* Attribute */
+code span.bn { color: #0000cf; } /* BaseN */
+code span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4e9a06; } /* Char */
+code span.cn { color: #000000; } /* Constant */
+code span.co { color: #8f5902; font-style: italic; } /* Comment */
+code span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code span.dt { color: #204a87; } /* DataType */
+code span.dv { color: #0000cf; } /* DecVal */
+code span.er { color: #a40000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #0000cf; } /* Float */
+code span.fu { color: #000000; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code span.ot { color: #8f5902; } /* Other */
+code span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code span.sc { color: #000000; } /* SpecialChar */
+code span.ss { color: #4e9a06; } /* SpecialString */
+code span.st { color: #4e9a06; } /* String */
+code span.va { color: #000000; } /* Variable */
+code span.vs { color: #4e9a06; } /* VerbatimString */
+code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
 
 
 <style type="text/css">
@@ -1555,7 +1654,7 @@ Tidyverse Korea<br><h4 class="date">2019-07-23</h4>
 <p>AWS S3의 정적 웹 사이트 호스팅(<code>Static Web Site Hosting</code>) 기능을 활용하여 블로그를 S3에 올릴 수 있다. S3에 대한 비용은 <a href="https://aws.amazon.com/ko/s3/pricing/">Amazon S3 요금</a>에서 확인할 수 있는데 <strong>S3 Standard 스토리지</strong> 기준 <code>처음 50TB/월</code> → <code>0.025 USD/GB</code> 요금이 나와 있다.</p>
 </div>
 <div id="aws-blogs" class="section level1">
-<h1><span class="header-section-number">2</span> 블로그 웹사이트</h1>
+<h1><span class="header-section-number">2</span> 블로그 웹사이트 <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></h1>
 <p>제킬로 개인 블로그를 제작하는 방법에 대해서는 다음 웹사이트를 참고한다.</p>
 <style>
 div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
@@ -1567,7 +1666,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
 </div>
 </div>
 <div id="aws-S3-설정" class="section level1">
-<h1><span class="header-section-number">3</span> AWS S3 설정 <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></h1>
+<h1><span class="header-section-number">3</span> AWS S3 설정 <a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a></h1>
 <p>제작된 블로그를 Github이 아니라 S3에 호스팅을 할 경우 다음 단계를 거친다.</p>
 <ol style="list-style-type: decimal">
 <li>S3 버킷 생성</li>
@@ -1584,12 +1683,45 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
 </div>
 <div id="aws-bucket-create" class="section level2">
 <h2><span class="header-section-number">3.2</span> S3 버킷 생성</h2>
+<ul>
+<li>스토리지 → S3 → S3 버킷 → 버킷 만들기 → 버킷명(<code>tidyverse</code>)</li>
+</ul>
+<p>순서대로 S3 버킷을 생성하여 <code>tidyverse</code> 이름을 갖는 버킷을 만든다.</p>
+</div>
+<div id="aws-bucket-create" class="section level2">
+<h2><span class="header-section-number">3.3</span> 제킬 웹사이트 S3 업로드</h2>
+<p><code>jekyll serve</code>를 하게 되면 <code>_site</code> 디렉토리에 정적 웹사이트 콘텐츠가 모여있다. <code>_site</code> 전체 내용을 생성한 버킷에 업로드한다.</p>
+</div>
+<div id="aws-bucket-permission" class="section level2">
+<h2><span class="header-section-number">3.4</span> 버킷 정책(Permission) 설정</h2>
+<p>생성한 버킷(<code>tidyverse</code>)으로 들어가서 <strong>권한</strong> → <strong>버킷 정책(Permission)</strong> 에서 <code>버킷 정책 편집기</code>에 다음 내용을 복사하여 붙여넣는다.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1">{</a>
+<a class="sourceLine" id="cb1-2" data-line-number="2">    <span class="st">&quot;Version&quot;</span><span class="op">:</span><span class="st"> &quot;2012-10-17&quot;</span>,</a>
+<a class="sourceLine" id="cb1-3" data-line-number="3">    <span class="st">&quot;Statement&quot;</span><span class="op">:</span><span class="st"> </span>[</a>
+<a class="sourceLine" id="cb1-4" data-line-number="4">        {</a>
+<a class="sourceLine" id="cb1-5" data-line-number="5">            <span class="st">&quot;Sid&quot;</span><span class="op">:</span><span class="st"> &quot;PublicReadGetObject&quot;</span>,</a>
+<a class="sourceLine" id="cb1-6" data-line-number="6">            <span class="st">&quot;Effect&quot;</span><span class="op">:</span><span class="st"> &quot;Allow&quot;</span>,</a>
+<a class="sourceLine" id="cb1-7" data-line-number="7">            <span class="st">&quot;Principal&quot;</span><span class="op">:</span><span class="st"> &quot;*&quot;</span>,</a>
+<a class="sourceLine" id="cb1-8" data-line-number="8">            <span class="st">&quot;Action&quot;</span><span class="op">:</span><span class="st"> &quot;s3:GetObject&quot;</span>,</a>
+<a class="sourceLine" id="cb1-9" data-line-number="9">            <span class="st">&quot;Resource&quot;</span><span class="op">:</span><span class="st"> &quot;arn:aws:s3:::tidyverse/*&quot;</span></a>
+<a class="sourceLine" id="cb1-10" data-line-number="10">        }</a>
+<a class="sourceLine" id="cb1-11" data-line-number="11">    ]</a>
+<a class="sourceLine" id="cb1-12" data-line-number="12">}</a></code></pre></div>
+</div>
+<div id="bucket-static-web-hosting" class="section level2">
+<h2><span class="header-section-number">3.5</span> 버킷 정적 웹 사이트 호스팅 기능 활성화</h2>
+<p>버킷(<code>tidyverse</code>)에서 <strong>속성</strong> → <strong>정적 웹 사이트 호스팅</strong> 기능을 활성화 시킨다. 별도 개인 도메인이 없는 경우 <code>이 버킷을 사용하여 웹 사이트를 호스팅합니다.</code>를 클릭하여 정적 웹사이트 호스팅을 통해 블로그를 운영한다.</p>
+<blockquote>
+<p>엔드포인트 : <a href="http://tidyverse.s3-website.ap-northeast-2.amazonaws.com" class="uri">http://tidyverse.s3-website.ap-northeast-2.amazonaws.com</a></p>
+</blockquote>
+<p>개인 도메인이 있는 경우 <strong>요청 리디렉션</strong>을 활용하여 구입한 도메인과 블로그 웹사이트를 연결시킨다.</p>
 </div>
 </div>
 <div class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p><a href="https://jongmin92.github.io/2017/07/17/Emily/6-aws-s3-static-web-hosting/">KimJongMin (2017-07-17), “AWS S3를 이용한 웹 호스팅”</a><a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn1"><p><a href="https://medium.com/@kyle.galbraith/how-to-host-a-website-on-s3-without-getting-lost-in-the-sea-e2b82aa6cd38">Kyle Galbraith (Jul 29, 2017), “How to Host a Website on S3 Without Getting Lost in the Sea”</a><a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p><a href="https://jongmin92.github.io/2017/07/17/Emily/6-aws-s3-static-web-hosting/">KimJongMin (2017-07-17), “AWS S3를 이용한 웹 호스팅”</a><a href="#fnref2" class="footnote-back">↩</a></p></li>
 </ol>
 </div>
 
