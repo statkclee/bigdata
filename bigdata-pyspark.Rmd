@@ -68,12 +68,37 @@ use_condaenv("anaconda3")
 - `pyspark.streaming`: 시계열 스트리밍(streaming) 데이터
 - `pyspark.ml` 혹은 `pyspark.mllib`: 기계학습
 
-# `pyspark` 환경설정 {#pyspark-setup}
+# `pyspark` 헬로월드 {#pyspark-setup}
 
+`SparkSession`을 가져와서 로컬 클러스터를 하나 생성하고, 명칭을 `hello_world_app` 으로 삼는다. 그러고 나서 `spark.stop()` 명령어로 이를 멈춘다.
 
+```{python pyspark-setup, eval=FALSE}
+from pyspark.sql import SparkSession
 
-```{python pyspark-setup}
-import pyspark
+spark = SparkSession.builder\
+                    .master('local[*]')\
+                    .appName('hello_world_app')\
+                    .getOrCreate()
 
+spark.stop()
 ```
 
+# 붓꽃 데이터 - `iris.csv` {#pyspark-setup-iris}
+
+
+```{python pyspark-iris}
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder\
+                    .master('local[*]')\
+                    .appName('hello_world_app')\
+                    .getOrCreate()
+
+iris = spark.read.csv('data/iris.csv', header=True)
+
+print(iris.show(5))
+spark.stop()
+
+
+
+```
