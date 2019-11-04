@@ -17,7 +17,7 @@ title: 빅데이터
     + [빅데이터 들어가며 - 기본기](bigdata-pyspark-prerequisite.html)
     + [시나리오별 클라우드(AWS) 컴퓨팅 자원을 데이터 과학에 활용](ml-aws-from-pc.html)
     + [스파크 로컬 클러스터 - 시운전(Dry Run)](bigdata-local-sparklyr.html)
-- 파이스파크 - `pyspark`
+- [파이스파크 - `pyspark`](bigdata-pyspark.html)
     * [데이터(S3) 읽어오기 - 파이썬](bigdata-pyspark-read-data.html)            
     * [자료 구조](bigdata-pyspark-data-structure.html)
     * [자료 변환](bigdata-pyspark-data-transformation.html)
