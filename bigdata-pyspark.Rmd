@@ -85,6 +85,7 @@ spark.stop()
 
 # 붓꽃 데이터 - `iris.csv` {#pyspark-setup-iris}
 
+로컬 컴퓨터 파일 `iris.csv` 파일으로 불러와서 5줄만 찍어본다.
 
 ```{python pyspark-iris}
 from pyspark.sql import SparkSession
